@@ -1,32 +1,34 @@
 package net.codingstuffs.abilene.model
 
-import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 
 object Member {
-  def props(member_id: String, preference: Double): Props = Props(new Member(member_id, preference))
+  def props(preference: Double, groupSize: Double, groupRef: ActorRef): Props = Props(new Member(preference, groupSize, groupRef))
 
-  final case class DeclareDecision(id: String, decision: Boolean)
+  final case class DeclareDecision(decision: Boolean)
+
+  case object Declare
 
 }
 
-class Member(member_id: String, preference: Double) extends Actor with ActorLogging with ActorSystem {
+class Member(preference: Double, groupSize: Double, groupRef: ActorRef) extends Actor {
 
   import Member._
 
   val decision_threshold = 0.5
-  var member_preferences: Map[String, Double]
-  var member_weights: Map[String, Double]
+  val default_assumed = 0.5
+
+  var member_preferences: Map[ActorRef, Double] = Map()
+  var member_weights: Map[ActorRef, Double] = Map()
 
   def calculate_decision: Boolean = {
-    val group_pref = member_weights.keySet.map(member => member_weights(member) * member_preferences(member)).sum
-    val group_size = member_weights.keySet.size
-
-    (group_pref + preference) / (group_size + 1) > decision_threshold
+    val group_pref = member_weights.keySet.map(member => member_weights(member) * member_preferences(member)).sum + default_assumed * (groupSize - member_weights.keySet.size - 1)
+    (group_pref + preference) / groupSize > decision_threshold
   }
 
-  override def Receive: Receive = {
+  override def receive: Receive = {
     case message: DeclareDecision =>
-      if (message.decision) member_preferences(message.id) = 0 else member_preferences(message.id) = 1
-    case _ =>  DeclareDecision(member_id, calculate_decision)
+      if (message.decision) member_preferences += (sender() -> 1) else member_preferences += (sender() -> 0)
+    case _ => groupRef ! DeclareDecision(calculate_decision)
   }
 }
