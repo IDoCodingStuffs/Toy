@@ -2,18 +2,20 @@ package net.codingstuffs.abilene.model
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.event.Logging
+import net.codingstuffs.abilene.model.Member.MemberParams
 
 object Member {
-  def props(member_weights: Map[String, Double], assumed_preferences: Map[String, Double]): Props =
-    Props(new Member(member_weights, assumed_preferences))
+  def props(group: ActorRef, params: MemberParams): Props =
+    Props(new Member(group, params))
 
   final case class DeclareDecision(member: String, decision: Boolean)
+  final case class Declare(decision: Boolean)
 
-  case object Declare
+  case class MemberParams(member_weights: Map[String, Double], assumedPreferences: Map[String, Double])
 
 }
 
-class Member(member_weights: Map[String, Double], assumedPreferences: Map[String, Double])
+class Member(group: ActorRef, params: MemberParams)
   extends Actor {
 
   import Member._
@@ -23,17 +25,17 @@ class Member(member_weights: Map[String, Double], assumedPreferences: Map[String
   val decision_threshold = 0.5
   val default_assumed = 0.5
 
-  var assumed_preferences = assumedPreferences
+  var assumed_preferences: Map[String, Double] = params.assumedPreferences
+  var member_weights: Map[String, Double] = params.member_weights
 
-  def calculate_decision: Boolean = {
-    var sum = 0.0
-    assumed_preferences.keySet.foreach(member => sum += (member_weights(member) * assumed_preferences(member)))
-    sum / assumed_preferences.size > decision_threshold
-  }
+  def calculate_decision: Boolean =
+    assumed_preferences.keySet.map(member => member_weights(member) * assumed_preferences(member)).sum / assumed_preferences.size > decision_threshold
+
 
   override def receive: Receive = {
     case message: DeclareDecision =>
       if (message.decision) assumed_preferences += (message.member -> 1) else assumed_preferences += (message.member -> 0)
-    case Declare => log.info(calculate_decision.toString)
+    case Declare =>
+      group ! Declare(calculate_decision)
   }
 }
