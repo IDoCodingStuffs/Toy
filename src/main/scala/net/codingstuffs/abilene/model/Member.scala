@@ -3,6 +3,8 @@ package net.codingstuffs.abilene.model
 import akka.actor.{Actor, ActorRef, Props}
 import akka.event.Logging
 import net.codingstuffs.abilene.model.Member.MemberParams
+import scala.concurrent.duration._
+
 
 object Member {
   def props(group: ActorRef, params: MemberParams): Props =
@@ -35,6 +37,7 @@ class Member(group: ActorRef, params: MemberParams)
   override def receive: Receive = {
     case message: DeclareDecision =>
       if (message.decision) assumed_preferences += (message.member -> 1) else assumed_preferences += (message.member -> 0)
+      log.info(s"Decision received (from ${sender()}), updated preference map for $this: $assumed_preferences")
     case Declare =>
       group ! Declare(calculate_decision)
   }
