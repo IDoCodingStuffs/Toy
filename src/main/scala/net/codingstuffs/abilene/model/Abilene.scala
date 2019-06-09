@@ -24,6 +24,7 @@ object Abilene extends App {
     mother ! Declare
 
   } finally {
+    Thread.sleep(1000)
     system.terminate()
   }
 }
