@@ -11,9 +11,10 @@ object Member {
     Props(new Member(group, params))
 
   final case class DeclareDecision(member: String, decision: Boolean)
+
   final case class Declare(decision: Boolean)
 
-  case class MemberParams(memberWeights: Map[String, Double], assumedOrKnownPreferences: Map[String, Double])
+  case class MemberParams(avoidanceVsRewards: (Double, Double), memberWeights: Map[String, Double], assumedOrKnownPreferences: Map[String, Double])
 
 }
 
@@ -26,6 +27,7 @@ class Member(group: ActorRef, params: MemberParams)
 
   val decision_threshold = 0.5
 
+  val avoidanceVsRewards: (Double, Double) = params.avoidanceVsRewards
   var assumed_preferences: Map[String, Double] = params.assumedOrKnownPreferences
   var member_weights: Map[String, Double] = params.memberWeights
 
@@ -33,7 +35,9 @@ class Member(group: ActorRef, params: MemberParams)
   log.info(s"Initial member weights for $self: $member_weights")
 
   def calculate_decision: Boolean =
-    assumed_preferences.keySet.map(member => member_weights(member) * assumed_preferences(member)).sum / assumed_preferences.size > decision_threshold
+    assumed_preferences.keySet
+      .map(member => member_weights(member) * assumed_preferences(member))
+      .sum / assumed_preferences.size > decision_threshold
 
   override def receive: Receive = {
     case message: DeclareDecision =>
@@ -41,6 +45,6 @@ class Member(group: ActorRef, params: MemberParams)
       log.debug(s"Decision received (from ${sender()}), updated preference map for $self : $assumed_preferences")
     case Declare =>
       log.debug(s"Decision fuzzy value for $self: $calculate_decision")
-      group ! DataPoint(Declare(calculate_decision), MemberParams(member_weights, assumed_preferences))
+      group ! DataPoint(Declare(calculate_decision), MemberParams(avoidanceVsRewards, member_weights, assumed_preferences))
   }
 }

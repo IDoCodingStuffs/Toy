@@ -10,7 +10,7 @@ object Abilene extends App {
   import Member._
 
 
-  val extraIterations: Int = if (args.length == 0) 0 else args(0).toInt
+  val extraIterations: Int = if (args.length == 0) 1 else args(0).toInt
 
   val system: ActorSystem = ActorSystem("Abilene0")
   val dataDumpGenerator = system.actorOf(DataDumpGenerator.props, "dataDumper")
@@ -19,20 +19,21 @@ object Abilene extends App {
   val groupMembers = Set("father", "mother", "wife", "husband")
 
   try {
-    0.to(extraIterations).foreach(_ => {
-      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"group")
+    1.to(extraIterations).foreach(_ => {
+      var uniqueTime = System.nanoTime()
 
-      father = system.actorOf(Member.props(group, generate(groupMembers)), "father")
-      mother = system.actorOf(Member.props(group, generate(groupMembers)), "mother")
-      wife = system.actorOf(Member.props(group, generate(groupMembers)), "wife")
-      husband = system.actorOf(Member.props(group, generate(groupMembers)), "husband")
+      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$uniqueTime---group")
+
+      father = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---father")
+      mother = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---mother")
+      wife = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---wife")
+      husband = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---husband")
 
       father ! Declare
       wife ! Declare
       husband ! Declare
       mother ! Declare
 
-      group ! PoisonPill
       father ! PoisonPill
       wife ! PoisonPill
       husband ! PoisonPill

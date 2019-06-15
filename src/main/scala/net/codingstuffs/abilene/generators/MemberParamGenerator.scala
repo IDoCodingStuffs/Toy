@@ -17,5 +17,6 @@ object MemberParamGenerator {
   def normalizeWeights(weights: Map[String, Double]): Map[String, Double] =
     weights.map(weight => weight._1 -> weight._2 * (weights.keySet.size / weights.values.sum))
 
-  def generate(groupMembers: Set[String]): MemberParams = MemberParams(gaussianMemberWeights(groupMembers), memberPreferences(groupMembers))
+  //!TODO: Change passed tuple for pain-avoidance vs reward once calculation changed
+  def generate(groupMembers: Set[String]): MemberParams = MemberParams((0,0), gaussianMemberWeights(groupMembers), memberPreferences(groupMembers))
 }

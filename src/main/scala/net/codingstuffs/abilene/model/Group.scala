@@ -18,13 +18,15 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
 
   import Group._
 
+  log.isWarningEnabled
+
   //!TODO: More fine tuned selections
   val group: ActorSelection = system.actorSelection("/user/*")
   val groupId = System.nanoTime() % Math.pow(10, 8)
 
   def receive: PartialFunction[Any, Unit] = {
-    case DataPoint(Declare(decision), MemberParams(memberWeights, assumedOrKnownPreferences)) =>
+    case DataPoint(Declare(decision), MemberParams((0,0), memberWeights, assumedOrKnownPreferences)) =>
       log.info(s"Decision received (from ${sender().path.name}): $decision")
-      dataDumpGenerator ! ActorDataPoint(groupId, sender().path.name, memberWeights, assumedOrKnownPreferences, decision)
+      dataDumpGenerator ! ActorDataPoint(groupId, sender().path.name.split("---")(1), memberWeights, assumedOrKnownPreferences, decision)
   }
 }
