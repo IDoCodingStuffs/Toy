@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorRef, Props}
 import akka.event.Logging
 import net.codingstuffs.abilene.model.Group.DataPoint
 import net.codingstuffs.abilene.model.Member.MemberParams
+import net.codingstuffs.abilene.model.logic.DecisionMakingModels.{LogicModel, Selfish, SimpleConsensusSeeking, WeightedConsensusSeeking}
 
 
 object Member {
@@ -14,7 +15,10 @@ object Member {
 
   final case class Declare(decision: Boolean)
 
-  case class MemberParams(avoidanceVsRewards: (Double, Double), memberWeights: Map[String, Double], assumedOrKnownPreferences: Map[String, Double])
+  case class MemberParams(avoidanceVsRewards: (Double, Double),
+                          decisionMakingModel: LogicModel,
+                          memberWeights: Map[String, Double],
+                          assumedOrKnownPreferences: Map[String, Double])
 
 }
 
@@ -31,13 +35,24 @@ class Member(group: ActorRef, params: MemberParams)
   var assumed_preferences: Map[String, Double] = params.assumedOrKnownPreferences
   var member_weights: Map[String, Double] = params.memberWeights
 
+  val decisionMakingModel: LogicModel = params.decisionMakingModel
+
   log.info(s"Initial member preferences for $self: $assumed_preferences")
   log.info(s"Initial member weights for $self: $member_weights")
 
-  def calculate_decision: Boolean =
-    assumed_preferences.keySet
-      .map(member => member_weights(member) * assumed_preferences(member))
-      .sum / assumed_preferences.size > decision_threshold
+  def calculate_decision(implicit model: LogicModel = decisionMakingModel): Boolean = {
+    model match {
+      case Selfish => assumed_preferences(self.path.name.split("---")(1)) >= decision_threshold
+      case SimpleConsensusSeeking =>
+        assumed_preferences.keySet
+          .map(member => assumed_preferences(member))
+          .sum / assumed_preferences.size > decision_threshold
+      case WeightedConsensusSeeking =>
+        assumed_preferences.keySet
+          .map(member => member_weights(member) * assumed_preferences(member))
+          .sum / assumed_preferences.size > decision_threshold
+    }
+  }
 
   override def receive: Receive = {
     case message: DeclareDecision =>
@@ -45,6 +60,6 @@ class Member(group: ActorRef, params: MemberParams)
       log.debug(s"Decision received (from ${sender()}), updated preference map for $self : $assumed_preferences")
     case Declare =>
       log.debug(s"Decision fuzzy value for $self: $calculate_decision")
-      group ! DataPoint(Declare(calculate_decision), MemberParams(avoidanceVsRewards, member_weights, assumed_preferences))
+      group ! DataPoint(Declare(calculate_decision), MemberParams(avoidanceVsRewards, decisionMakingModel, member_weights, assumed_preferences))
   }
 }
