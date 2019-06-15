@@ -26,7 +26,7 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), MemberParams(decisionThreshold,  model, memberWeights, assumedOrKnownPreferences)) =>
-      dataDumpGenerator ! ActorDataPoint
-      (groupId, sender().path.name.split("---")(1), decisionThreshold, memberWeights, assumedOrKnownPreferences, decision)
+      dataDumpGenerator !
+        ActorDataPoint(groupId, sender().path.name.split("---")(1), decisionThreshold, memberWeights, assumedOrKnownPreferences, decision)
   }
 }

@@ -27,8 +27,6 @@ class Member(group: ActorRef, params: MemberParams)
 
   import Member._
 
-  val log = Logging(context.system, this)
-
   val decision_threshold: Double = params.decisionThreshold
   var assumed_preferences: Map[String, Double] = params.assumedOrKnownPreferences
   var member_weights: Map[String, Double] = params.memberWeights

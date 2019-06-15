@@ -3,7 +3,6 @@ package net.codingstuffs.abilene.generators
 import net.codingstuffs.abilene.model.Member.MemberParams
 import net.codingstuffs.abilene.model.logic.DecisionMakingModels.{LogicModel, Selfish, SimpleConsensusSeeking, WeightedConsensusSeeking}
 import org.apache.commons.math3.distribution.BetaDistribution
-import org.apache.commons.math3.random.RandomGenerator
 
 import scala.util.Random
 
