@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 object DataDumpGenerator {
   def props: Props = Props[DataDumpGenerator]
 
-  case class ActorDataPoint(groupId: Double, memberName: String, memberWeights: Map[String, Double],
+  case class ActorDataPoint(groupId: Double, memberName: String, decisionThreshold: Double, memberWeights: Map[String, Double],
                             assumedOrKnownPreferences: Map[String, Double], decision: Boolean)
 
   case class CreateDump()
@@ -27,9 +27,7 @@ class DataDumpGenerator extends Actor with ActorLogging {
       caseClasses = caseClasses :+ dataPoint
     case CreateDump =>
       val dump = caseClasses.toDF()
-      dump.show(5)
-      log.info(s"No of groups simulated: ${dump.count}")
-      log.info(s"No of agents simulated: ${dump.groupBy("groupId").count}")
+      dump.show(25, false)
 
       //!TODO: When groupSize is parameterized this needs to be updated
       log.info(GroupDecisionComposition.getConsensusVariance(dump).toString)

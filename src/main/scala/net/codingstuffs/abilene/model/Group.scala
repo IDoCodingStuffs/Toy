@@ -25,8 +25,8 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
   val groupId = System.nanoTime() % Math.pow(10, 8)
 
   def receive: PartialFunction[Any, Unit] = {
-    case DataPoint(Declare(decision), MemberParams((0,0), memberWeights, assumedOrKnownPreferences)) =>
-      log.info(s"Decision received (from ${sender().path.name}): $decision")
-      dataDumpGenerator ! ActorDataPoint(groupId, sender().path.name.split("---")(1), memberWeights, assumedOrKnownPreferences, decision)
+    case DataPoint(Declare(decision), MemberParams(decisionThreshold,  model, memberWeights, assumedOrKnownPreferences)) =>
+      dataDumpGenerator ! ActorDataPoint
+      (groupId, sender().path.name.split("---")(1), decisionThreshold, memberWeights, assumedOrKnownPreferences, decision)
   }
 }
