@@ -1,9 +1,9 @@
-package net.codingstuffs.abilene.generators.random
+package net.codingstuffs.abilene.model.decision_making.generators.random
 
 import scala.util.Random
 
 object FoldedGaussian {
-  final val GAUSSIAN_GENERATOR = new FoldedGaussian
+  final val GENERATOR = new FoldedGaussian
 }
 
 class FoldedGaussian extends Random {

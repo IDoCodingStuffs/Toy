@@ -1,11 +1,11 @@
-package net.codingstuffs.abilene.generators.random
+package net.codingstuffs.abilene.model.decision_making.generators.random
 
 import org.apache.commons.math3.distribution.BetaDistribution
 
 import scala.util.Random
 
 object Beta {
-  final val BETA_DISTRIBUTED_GENERATOR = new Beta
+  final val GENERATOR = new Beta
 }
 
 class Beta extends Random {

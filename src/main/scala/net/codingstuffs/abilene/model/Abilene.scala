@@ -2,8 +2,7 @@ package net.codingstuffs.abilene.model
 
 import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor
-import net.codingstuffs.abilene.generators.DataAggregator.CreateDump
-import net.codingstuffs.abilene.generators.params.MemberParameters._
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
 
 object Abilene extends App {
 
@@ -24,10 +23,10 @@ object Abilene extends App {
 
       group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$uniqueTime---group")
 
-      father = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---father")
-      mother = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---mother")
-      wife = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---wife")
-      husband = system.actorOf(Member.props(group, generate(groupMembers)), s"$uniqueTime---husband")
+      father = system.actorOf(Member.props(group), s"$uniqueTime---father")
+      mother = system.actorOf(Member.props(group), s"$uniqueTime---mother")
+      wife = system.actorOf(Member.props(group), s"$uniqueTime---wife")
+      husband = system.actorOf(Member.props(group), s"$uniqueTime---husband")
 
       father ! Declare
       wife ! Declare

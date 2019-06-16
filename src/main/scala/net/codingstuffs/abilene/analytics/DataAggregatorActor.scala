@@ -2,13 +2,15 @@ package net.codingstuffs.abilene.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
+import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 import org.apache.spark.sql.SparkSession
 
 object DataAggregatorActor {
   def props: Props = Props[DataAggregatorActor]
 
-  case class ActorDataPoint(groupId: Double, memberName: String, decisionThreshold: Double, memberWeights: Map[String, Double],
-                            assumedOrKnownPreferences: Map[String, Double], decision: Boolean)
+  case class ActorDataPoint(groupId: Double,
+                            decisionParams: DecisionParams,
+                            decision: Boolean)
 
   case class CreateDump()
 

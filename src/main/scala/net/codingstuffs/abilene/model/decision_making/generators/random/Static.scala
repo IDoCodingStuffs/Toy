@@ -1,9 +1,9 @@
-package net.codingstuffs.abilene.generators.random
+package net.codingstuffs.abilene.model.decision_making.generators.random
 
 import scala.util.Random
 
 object Static {
-  final val STATIC_GENERATOR = new Static
+  final val GENERATOR = new Static
 }
 
 class Static extends Random{
