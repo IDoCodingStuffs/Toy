@@ -1,27 +1,33 @@
 package net.codingstuffs.abilene.model
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import akka.routing.BroadcastGroup
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.ActorDataPoint
 import net.codingstuffs.abilene.model.Abilene.system
-import net.codingstuffs.abilene.model.Member.{Declare, DeclareDecision}
+import net.codingstuffs.abilene.model.Member.Declare
+import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object Group {
   def props: Props = Props[Group]
-  def props(members: Set[String]): Props = Props(new Group(members))
+
+  def props(members: Set[String], dataDumpGenerator: ActorRef): Props = Props(new Group(members, dataDumpGenerator))
+
+  case class DataPoint(declare: Declare, memberParams: DecisionParams)
+
 }
 
-class Group(members: Set[String]) extends Actor with ActorLogging {
+class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor with ActorLogging {
+
   import Group._
 
-//  val router: ActorRef =
-//    system.actorOf(BroadcastGroup(members.map(member => s"/user/$member")).props(), "groupRouter")
+  log.isWarningEnabled
 
-  //!TODO: More fine tuned decisions
-  val group = system.actorSelection("/user/*")
+  //!TODO: More fine tuned selections
+  val group: ActorSelection = system.actorSelection("/user/*")
+  val groupId = System.nanoTime() % Math.pow(10, 8)
 
   def receive: PartialFunction[Any, Unit] = {
-    case Declare(decision) =>
-      log.info(s"Decision received (from ${sender().path.name}): $decision")
-      group ! DeclareDecision(sender().path.name, decision)
+    case DataPoint(Declare(decision), params: DecisionParams) =>
+      dataDumpGenerator !
+        ActorDataPoint(groupId, params, decision)
   }
 }
