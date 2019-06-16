@@ -7,7 +7,13 @@ object ModelParamAdjuster {
 
   def adjust(model:DecisionMakingModel, param: DecisionParams): DecisionParams = {
     model match {
-      case SimpleRoundup => ???
+      case SimpleRoundup =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, 1),
+          param.groupPreferences,
+          param.groupWeights.map(weights => weights._1 -> 0.0)
+        )
+
       case SociotropyAutonomy => ???
       case SocialImpactNSL => ???
     }
