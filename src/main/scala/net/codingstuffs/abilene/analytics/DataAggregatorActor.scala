@@ -1,12 +1,11 @@
-package net.codingstuffs.abilene.generators
+package net.codingstuffs.abilene.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
-import net.codingstuffs.abilene.analytics.GroupDecisionComposition
-import net.codingstuffs.abilene.generators.DataDumpGenerator.{ActorDataPoint, CreateDump}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
 import org.apache.spark.sql.SparkSession
 
-object DataDumpGenerator {
-  def props: Props = Props[DataDumpGenerator]
+object DataAggregatorActor {
+  def props: Props = Props[DataAggregatorActor]
 
   case class ActorDataPoint(groupId: Double, memberName: String, decisionThreshold: Double, memberWeights: Map[String, Double],
                             assumedOrKnownPreferences: Map[String, Double], decision: Boolean)
@@ -15,17 +14,16 @@ object DataDumpGenerator {
 
 }
 
-class DataDumpGenerator extends Actor with ActorLogging {
+class DataAggregatorActor extends Actor with ActorLogging {
   var caseClasses: Seq[ActorDataPoint] = Seq()
 
   val sparkSession: SparkSession = SparkSession.builder().master("local").getOrCreate()
-
-  import sparkSession.implicits._
 
   override def receive: Receive = {
     case dataPoint: ActorDataPoint =>
       caseClasses = caseClasses :+ dataPoint
     case CreateDump =>
+      import sparkSession.implicits._
       val dump = caseClasses.toDF()
       dump.show(25, false)
 

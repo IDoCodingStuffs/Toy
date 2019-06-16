@@ -1,10 +1,9 @@
 package net.codingstuffs.abilene.model
 
 import akka.actor.{Actor, ActorRef, Props}
-import akka.event.Logging
 import net.codingstuffs.abilene.model.Group.DataPoint
 import net.codingstuffs.abilene.model.Member.MemberParams
-import net.codingstuffs.abilene.model.logic.DecisionMakingModels.{LogicModel, Selfish, SimpleConsensusSeeking, WeightedConsensusSeeking}
+import net.codingstuffs.abilene.model.decision_making.DecisionMakingModels.{BetaDistributedRoundup, DecisionMakingModel, SimpleRoundup, SocialImpactNSL, SociotropyAutonomy}
 
 
 object Member {
@@ -16,7 +15,6 @@ object Member {
   final case class Declare(decision: Boolean)
 
   case class MemberParams(decisionThreshold: Double,
-                          decisionMakingModel: LogicModel,
                           memberWeights: Map[String, Double],
                           assumedOrKnownPreferences: Map[String, Double])
 
@@ -30,18 +28,20 @@ class Member(group: ActorRef, params: MemberParams)
   val decision_threshold: Double = params.decisionThreshold
   var assumed_preferences: Map[String, Double] = params.assumedOrKnownPreferences
   var member_weights: Map[String, Double] = params.memberWeights
-  val decisionMakingModel: LogicModel = params.decisionMakingModel
+  val decisionMakingModel: DecisionMakingModel = params.decisionMakingModel
 
-  def calculate_decision(implicit model: LogicModel = decisionMakingModel): Boolean = {
+  private val selfPreference = assumed_preferences(self.path.name.split("---")(1))
+
+  def calculate_decision(model: DecisionMakingModel): Boolean = {
     model match {
-      case Selfish => assumed_preferences(self.path.name.split("---")(1)) >= decision_threshold
-
-      case SimpleConsensusSeeking =>
+      case SimpleRoundup => selfPreference >= 0.5
+      case BetaDistributedRoundup(threshold) => selfPreference >= threshold
+      case SociotropyAutonomy() =>
         assumed_preferences.keySet
           .map(member => assumed_preferences(member))
           .sum / assumed_preferences.size > decision_threshold
 
-      case WeightedConsensusSeeking =>
+      case SocialImpactNSL =>
         assumed_preferences.keySet
           .map(member => member_weights(member) * assumed_preferences(member))
           .sum / assumed_preferences.size > decision_threshold
@@ -52,6 +52,6 @@ class Member(group: ActorRef, params: MemberParams)
     case message: ReceiveDecision =>
       if (message.decision) assumed_preferences += (message.member -> 1) else assumed_preferences += (message.member -> 0)
     case Declare =>
-      group ! DataPoint(Declare(calculate_decision), MemberParams(decision_threshold, decisionMakingModel, member_weights, assumed_preferences))
+      group ! DataPoint(Declare(calculate_decision), MemberParams(decision_threshold, member_weights, assumed_preferences))
   }
 }
