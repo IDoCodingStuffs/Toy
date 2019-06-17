@@ -2,7 +2,7 @@ package net.codingstuffs.abilene.model
 
 import akka.actor.{Actor, ActorRef, Props}
 import net.codingstuffs.abilene.model.Group.DataPoint
-import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, SimpleRoundup}
+import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, NaiveRoundup, SimpleSociotropyAutonomy, WeightedSociotropyAutonomy}
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
@@ -23,7 +23,8 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = SimpleRoundup
+  implicit val decisionModel: DecisionMakingModel = WeightedSociotropyAutonomy(1, 0)
+
   private val name = self.path.name.split("---")(1)
   //!TODO: Make this specifiable
   private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Beta.GENERATOR)
