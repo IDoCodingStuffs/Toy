@@ -5,7 +5,6 @@ import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGener
 
 object DecisionCalculator {
   def get(implicit model: DecisionMakingModel, params: DecisionParams): Boolean = {
-    val groupSize = params.groupWeights.keySet.size + 1
     val groupMembers = params.groupWeights.keySet
 
     val adjustedParams = ModelParamAdjuster.adjust
@@ -15,6 +14,6 @@ object DecisionCalculator {
         adjustedParams.groupWeights(member) * adjustedParams.groupPreferences(member))
       .sum
 
-    (self_val + group_val) / groupSize > 0.5
+    self_val + (group_val/groupMembers.size) > 1
   }
 }

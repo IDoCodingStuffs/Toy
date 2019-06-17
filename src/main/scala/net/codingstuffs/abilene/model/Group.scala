@@ -23,7 +23,7 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
 
   //!TODO: More fine tuned selections
   val group: ActorSelection = system.actorSelection("/user/*")
-  val groupId = System.nanoTime() % Math.pow(10, 8)
+  val groupId = self.path.name.split("---")(0)
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: DecisionParams) =>
