@@ -19,8 +19,11 @@ object Abilene extends App {
     val husband = system.actorOf(Member.props(group, generate(groupMembers)), "husband")
 
     father ! Declare
+    Thread.sleep(1000)
     wife ! Declare
+    Thread.sleep(1000)
     husband ! Declare
+    Thread.sleep(1000)
     mother ! Declare
 
   } finally {
