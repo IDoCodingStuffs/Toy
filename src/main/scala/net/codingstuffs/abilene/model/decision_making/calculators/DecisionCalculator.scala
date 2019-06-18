@@ -25,7 +25,7 @@ object DecisionCalculator {
         val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[SimpleSociotropyAutonomy],
           (params, agentifiedGroup))
 
-        if (compromise.y > autonomy) compromise.x > 0.5 else self_val > 0.5
+        if (compromise.y > autonomy / 2) compromise.x > 0.5 else self_val > 0.5
       }
     }
   }
