@@ -11,16 +11,16 @@ object ModelParamAdjuster {
     model match {
       case NaiveRoundup =>
         DecisionParams(
-          (param.selfParams._1, param.selfParams._2, groupSize),
+          (param.selfParams._1, param.selfParams._2, 1),
           param.groupPreferences,
           param.groupWeights.map(weights => weights._1 -> 0.0)
         )
 
       case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
         this normalize DecisionParams(
-          (param.selfParams._1, param.selfParams._2, autonomy),
+          (param.selfParams._1, param.selfParams._2, 1.0),
           param.groupPreferences,
-          param.groupWeights.map(weights => weights._1 -> sociotropy)
+          param.groupWeights.map(weights => weights._1 -> 1.0)
         )
 
       case WeightedSociotropyAutonomy(sociotropy, autonomy) =>

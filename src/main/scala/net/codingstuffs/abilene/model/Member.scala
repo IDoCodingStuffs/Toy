@@ -23,7 +23,7 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = WeightedSociotropyAutonomy(0, 1)
+  implicit val decisionModel: DecisionMakingModel = SimpleSociotropyAutonomy(1, 0)
 
   private val name = self.path.name.split("---")(1)
   //!TODO: Make this specifiable
