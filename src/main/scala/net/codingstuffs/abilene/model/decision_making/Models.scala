@@ -6,6 +6,8 @@ object Models {
 
   final case object NaiveRoundup extends DecisionMakingModel
 
+  final case object FuzzyCentroid extends DecisionMakingModel
+
   //Bieling, Beck, Brown (2000)
   final case class SimpleSociotropyAutonomy(sociotropy: Double, autonomy: Double) extends DecisionMakingModel
   final case class WeightedSociotropyAutonomy(sociotropy: Double, autonomy: Double) extends DecisionMakingModel
