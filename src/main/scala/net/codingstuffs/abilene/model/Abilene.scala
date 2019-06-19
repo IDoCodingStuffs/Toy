@@ -4,6 +4,8 @@ import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
 
+import scala.util.Random
+
 object Abilene extends App {
 
   import Member._
@@ -20,8 +22,9 @@ object Abilene extends App {
   try {
     1.to(extraIterations).foreach(_ => {
       var uniqueTime = System.nanoTime()
+      val random = new Random
 
-      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$uniqueTime---group")
+      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"${math.abs(random.nextLong)}---group")
 
       father = system.actorOf(Member.props(group), s"$uniqueTime---father")
       mother = system.actorOf(Member.props(group), s"$uniqueTime---mother")

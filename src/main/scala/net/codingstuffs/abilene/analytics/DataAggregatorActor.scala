@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 object DataAggregatorActor {
   def props: Props = Props[DataAggregatorActor]
 
-  case class ActorDataPoint(groupId: Double,
+  case class ActorDataPoint(groupId: String,
                             decisionParams: DecisionParams,
                             decision: Boolean)
 
@@ -30,6 +30,9 @@ class DataAggregatorActor extends Actor with ActorLogging {
       dump.show(25, false)
 
       //!TODO: When groupSize is parameterized this needs to be updated
-      log.info(GroupDecisionComposition.getConsensusVariance(dump).toString)
+      val groupDecisionCompositionAnalytics =  new GroupDecisionComposition(dump)
+
+      log.info(groupDecisionCompositionAnalytics.getConsensusVariance.toString)
+      groupDecisionCompositionAnalytics.getYesVoteCounts.show
   }
 }
