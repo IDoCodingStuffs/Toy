@@ -5,7 +5,7 @@ import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGener
 
 object AgentFuzzifier {
 
-  case class Point(x: Double, y: Double)
+  case class Point(x: BigDecimal, y: BigDecimal)
 
   case class Line(p1: Point, p2: Point)
 
@@ -27,7 +27,7 @@ object AgentFuzzifier {
   }
 
   def getAgentLines(implicit model: WeightedSociotropyAutonomy, param: DecisionParams): (Line, Line) = {
-    val peakPoint = Point(param.selfParams._2, param.selfParams._3)
+    val peakPoint = Point(param.selfParams._2, model.autonomy)
     val leftPoint = Point(param.selfParams._2 - model.sociotropy / 2, 0)
     val rightPoint = Point(param.selfParams._2 + model.sociotropy / 2, 0)
 
@@ -43,7 +43,6 @@ object AgentFuzzifier {
     lineIntersect(getAgentLines(model, agent1)._2, getAgentLines(model, agent2)._1)
   }
 
-  //Taken from rosettacode.org
   def lineIntersect(l1: Line, l2: Line): Point = {
     val a1 = l1.p2.y - l1.p1.y
     val b1 = l1.p1.x - l1.p2.x
