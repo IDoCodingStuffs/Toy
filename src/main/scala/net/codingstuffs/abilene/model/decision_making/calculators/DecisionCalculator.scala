@@ -2,12 +2,11 @@ package net.codingstuffs.abilene.model.decision_making.calculators
 
 import net.codingstuffs.abilene.model.decision_making.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier
-import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier.{Line, getAgentLines}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object DecisionCalculator {
   def get(implicit model: DecisionMakingModel, params: DecisionParams): Boolean = {
-    val groupMembers = params.groupWeights.keySet
+    val groupMembers = params.groupWeights.keySet.toSeq
 
     val adjustedParams = ModelParamAdjuster.adjust
 
@@ -16,7 +15,7 @@ object DecisionCalculator {
     val group_val = groupMembers
       .map(member =>
         adjustedParams.groupWeights(member) * adjustedParams.groupPreferences(member))
-      .sum
+      .sum / groupMembers.size
 
     model match {
       case NaiveRoundup => self_val > 0.5

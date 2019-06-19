@@ -45,7 +45,7 @@ object ModelParamAdjuster {
     DecisionParams(
       (param.selfParams._1, param.selfParams._2, getNormalVal(param.selfParams._3)),
       param.groupPreferences,
-      param.groupWeights.map(weights => weights._1 -> getNormalVal(weights._2) * 2)
+      param.groupWeights.map(weights => weights._1 -> getNormalVal(weights._2))
     )
   }
 }

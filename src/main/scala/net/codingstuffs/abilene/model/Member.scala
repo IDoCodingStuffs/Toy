@@ -27,7 +27,7 @@ class Member(group: ActorRef)
 
   private val name = self.path.name.split("---")(1)
   //!TODO: Make this specifiable
-  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Static.GENERATOR)
+  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Uniform.GENERATOR)
 
   agentParamGenerator.self = name
   //!TODO: Generalize this
