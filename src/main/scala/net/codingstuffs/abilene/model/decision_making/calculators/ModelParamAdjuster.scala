@@ -35,12 +35,17 @@ object ModelParamAdjuster {
   }
 
   def normalize(param: DecisionParams): DecisionParams = {
-    val factor = (param.groupWeights.size + 1) / (param.groupWeights.values.sum + param.selfParams._3)
+    def getNormalVal(value: Double)(implicit min_max: (Double, Double)): Double =
+      (value - min_max._1) / (min_max._2 - min_max._1)
+
+    implicit val min_max: (Double, Double) =
+      ((param.groupWeights.values.toSeq :+ param.selfParams._3).min,
+        (param.groupWeights.values.toSeq :+ param.selfParams._3).max)
 
     DecisionParams(
-      (param.selfParams._1, param.selfParams._2, factor * param.selfParams._3),
+      (param.selfParams._1, param.selfParams._2, getNormalVal(param.selfParams._3)),
       param.groupPreferences,
-      param.groupWeights.map(weights => weights._1 -> factor * weights._2)
+      param.groupWeights.map(weights => weights._1 -> getNormalVal(weights._2))
     )
   }
 }

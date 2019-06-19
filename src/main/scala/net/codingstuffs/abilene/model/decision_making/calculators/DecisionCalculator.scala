@@ -2,6 +2,7 @@ package net.codingstuffs.abilene.model.decision_making.calculators
 
 import net.codingstuffs.abilene.model.decision_making.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier
+import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier.{Line, getAgentLines}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object DecisionCalculator {
@@ -43,7 +44,8 @@ object DecisionCalculator {
 
         val areaUntilCentroid = sumAreas / 2
 
-
+        true
+//        groupMembers.map(member => getAgentLines(model, agent1)._2, getAgentLines(model, agent2)._1)
     }
   }
 }

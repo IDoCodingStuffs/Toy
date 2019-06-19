@@ -1,6 +1,6 @@
 package net.codingstuffs.abilene.model.decision_making.calculators.fuzzy
 
-import net.codingstuffs.abilene.model.decision_making.Models.SimpleSociotropyAutonomy
+import net.codingstuffs.abilene.model.decision_making.Models.{SimpleSociotropyAutonomy, WeightedSociotropyAutonomy}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object AgentFuzzifier {
@@ -26,6 +26,24 @@ object AgentFuzzifier {
     lineIntersect(getAgentLines(model, agent1)._2, getAgentLines(model, agent2)._1)
   }
 
+  def getAgentLines(implicit model: WeightedSociotropyAutonomy, param: DecisionParams): (Line, Line) = {
+    val peakPoint = Point(param.selfParams._2, model.autonomy)
+    val leftPoint = Point(param.selfParams._2 - model.sociotropy / 2, 0)
+    val rightPoint = Point(param.selfParams._2 + model.sociotropy / 2, 0)
+
+    (Line(leftPoint, peakPoint), Line(peakPoint, rightPoint))
+  }
+
+  def getIntersect(implicit model: WeightedSociotropyAutonomy,
+                   params: (DecisionParams, DecisionParams)): Point = {
+    val agent1 =
+      if (params._1.selfParams._2 < params._2.selfParams._2) params._1 else params._2
+    val agent2 = if (params._1.selfParams._2 >= params._2.selfParams._2) params._1 else params._2
+
+    lineIntersect(getAgentLines(model, agent1)._2, getAgentLines(model, agent2)._1)
+  }
+
+  //Taken from rosettacode.org
   def lineIntersect(l1: Line, l2: Line): Point = {
     val a1 = l1.p2.y - l1.p1.y
     val b1 = l1.p1.x - l1.p2.x
