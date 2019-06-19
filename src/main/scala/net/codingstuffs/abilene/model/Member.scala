@@ -6,7 +6,7 @@ import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingMode
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, Static, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Static, Uniform}
 
 object Member {
   def props(group: ActorRef): Props =
@@ -23,11 +23,11 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = WeightedSociotropyAutonomy(0.99, 0.01)
+  implicit val decisionModel: DecisionMakingModel = SimpleSociotropyAutonomy(0.999, 0.001)
 
   private val name = self.path.name.split("---")(1)
   //!TODO: Make this specifiable
-  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Uniform.GENERATOR)
+  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Static.GENERATOR)
 
   agentParamGenerator.self = name
   //!TODO: Generalize this

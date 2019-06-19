@@ -17,7 +17,7 @@ object ModelParamAdjuster {
         )
 
       case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
-        this normalize DecisionParams(
+        DecisionParams(
           (param.selfParams._1, param.selfParams._2, 1.0),
           param.groupPreferences,
           param.groupWeights.map(weights => weights._1 -> 1.0)
@@ -25,9 +25,9 @@ object ModelParamAdjuster {
 
       case WeightedSociotropyAutonomy(sociotropy, autonomy) =>
         this normalize DecisionParams(
-          (param.selfParams._1, param.selfParams._2, param.selfParams._3),
+          (param.selfParams._1, param.selfParams._2, 1.0),
           param.groupPreferences,
-          param.groupPreferences.map(weights => weights._1 -> weights._2 * param.groupPreferences(weights._1))
+          param.groupWeights.map(weights => weights._1 -> weights._2 * param.groupPreferences(weights._1))
         )
 
       case SocialImpactNSL => ???
@@ -45,7 +45,7 @@ object ModelParamAdjuster {
     DecisionParams(
       (param.selfParams._1, param.selfParams._2, getNormalVal(param.selfParams._3)),
       param.groupPreferences,
-      param.groupWeights.map(weights => weights._1 -> getNormalVal(weights._2))
+      param.groupWeights.map(weights => weights._1 -> getNormalVal(weights._2) * 2)
     )
   }
 }

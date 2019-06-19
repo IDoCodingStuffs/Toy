@@ -10,7 +10,7 @@ object AgentFuzzifier {
   case class Line(p1: Point, p2: Point)
 
   def getAgentLines(implicit model: SimpleSociotropyAutonomy, param: DecisionParams): (Line, Line) = {
-    val peakPoint = Point(param.selfParams._2, model.autonomy)
+    val peakPoint = Point(param.selfParams._2, param.selfParams._3)
     val leftPoint = Point(param.selfParams._2 - model.sociotropy / 2, 0)
     val rightPoint = Point(param.selfParams._2 + model.sociotropy / 2, 0)
 
@@ -27,7 +27,7 @@ object AgentFuzzifier {
   }
 
   def getAgentLines(implicit model: WeightedSociotropyAutonomy, param: DecisionParams): (Line, Line) = {
-    val peakPoint = Point(param.selfParams._2, model.autonomy)
+    val peakPoint = Point(param.selfParams._2, param.selfParams._3)
     val leftPoint = Point(param.selfParams._2 - model.sociotropy / 2, 0)
     val rightPoint = Point(param.selfParams._2 + model.sociotropy / 2, 0)
 

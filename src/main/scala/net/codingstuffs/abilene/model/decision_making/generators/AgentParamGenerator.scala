@@ -24,8 +24,5 @@ class AgentParamGenerator(random: Random) {
   def groupWeights(implicit groupMembers: Set[String], max_deviation: Int = 3): Map[String, Double] =
     groupMembers.filter(member => member != self).map(member => member -> random.nextDouble).toMap
 
-  def normalizeWeights(weights: Map[String, Double]): Map[String, Double] =
-    weights.map(weight => weight._1 -> weight._2 * (weights.keySet.size / weights.values.sum))
-
   def get: DecisionParams = DecisionParams(getSelfParams(self), groupPreferences, groupWeights)
 }
