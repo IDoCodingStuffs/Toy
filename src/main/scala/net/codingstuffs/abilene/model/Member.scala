@@ -1,6 +1,6 @@
 package net.codingstuffs.abilene.model
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import net.codingstuffs.abilene.model.Group.DataPoint
 import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, NaiveRoundup, SimpleSociotropyAutonomy, WeightedSociotropyAutonomy}
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
@@ -19,7 +19,7 @@ object Member {
 }
 
 class Member(group: ActorRef)
-  extends Actor {
+  extends Actor with ActorLogging{
 
   import Member._
 
@@ -35,14 +35,16 @@ class Member(group: ActorRef)
 
   implicit var params: DecisionParams = agentParamGenerator.get
 
-  private var knownPreferences = params.groupPreferences
+  private val knownPreferences = params.groupPreferences
 
-  override def receive: Receive = {
+  override def receive: Receive = onMessage(knownPreferences)
+
+  private def onMessage(knownPreferences: Map[String, Double]): Receive = {
     case message: ReceiveDecision =>
-      if (message.decision) knownPreferences += (message.member -> 1)
-      else knownPreferences += (message.member -> 1)
-
+      if (message.decision) context.become(onMessage(knownPreferences + (message.member -> 1))) else context.become(onMessage(knownPreferences + (message.member -> 0)))
     case Declare =>
-      group ! DataPoint(Declare(DecisionCalculator.get), params)
+      val param = DecisionParams(params.selfParams, knownPreferences, params.groupWeights)
+      val calc = new DecisionCalculator(param)
+      group ! DataPoint(Declare(calc.get), param)
   }
 }

@@ -4,11 +4,11 @@ import net.codingstuffs.abilene.model.decision_making.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
-object DecisionCalculator {
-  def get(implicit model: DecisionMakingModel, params: DecisionParams): Boolean = {
+class DecisionCalculator(params: DecisionParams) {
+  def get(implicit model: DecisionMakingModel): Boolean = {
     val groupMembers = params.groupWeights.keySet.toSeq
 
-    val adjustedParams = ModelParamAdjuster.adjust
+    val adjustedParams = ModelParamAdjuster.adjust(model, params)
 
     val self_val = adjustedParams.selfParams._2 * adjustedParams.selfParams._3
 
