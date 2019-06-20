@@ -27,7 +27,7 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: DecisionParams) =>
-      group ! ReceiveDecision(sender().path.name, decision)
+      group ! ReceiveDecision(sender().path.name.split("---")(1), decision)
       dataDumpGenerator !
         ActorDataPoint(groupId, params, decision)
   }

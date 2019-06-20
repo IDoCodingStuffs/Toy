@@ -2,11 +2,12 @@ package net.codingstuffs.abilene.model
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import net.codingstuffs.abilene.model.Group.DataPoint
-import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, EgalitarianRoundup, SelfishRoundup, SimpleSociotropyAutonomy, WeightedSociotropyAutonomy}
+import net.codingstuffs.abilene.model.decision_making.models.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Static, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, DiscreteUniform, Uniform}
+import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.WeightedRoundup
 
 object Member {
   def props(group: ActorRef): Props =
@@ -23,7 +24,7 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = EgalitarianRoundup
+  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.4, 0.6)
 
   private val name = self.path.name.split("---")(1)
   //!TODO: Make this specifiable

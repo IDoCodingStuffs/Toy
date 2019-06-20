@@ -19,7 +19,10 @@ object DataAggregatorActor {
 class DataAggregatorActor extends Actor with ActorLogging {
   var caseClasses: Seq[ActorDataPoint] = Seq()
 
-  val sparkSession: SparkSession = SparkSession.builder().master("local").getOrCreate()
+  val sparkSession: SparkSession = SparkSession.builder()
+    .config("spark.cores.max", 8)
+    .config("spark.executor.cores", 2)
+    .master("local").getOrCreate()
 
   override def receive: Receive = {
     case dataPoint: ActorDataPoint =>

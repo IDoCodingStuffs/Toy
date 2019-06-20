@@ -1,6 +1,6 @@
 package net.codingstuffs.abilene.model.decision_making.calculators.fuzzy
 
-import net.codingstuffs.abilene.model.decision_making.Models.{SimpleSociotropyAutonomy, WeightedSociotropyAutonomy}
+import net.codingstuffs.abilene.model.decision_making.models.Models.{SimpleSociotropyAutonomy, WeightedSociotropyAutonomy}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object AgentFuzzifier {

@@ -1,7 +1,8 @@
 package net.codingstuffs.abilene.model.decision_making.calculators
 
-import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, EgalitarianRoundup, SelfishRoundup, SimpleSociotropyAutonomy, SocialImpactNSL, WeightedRoundup, WeightedSociotropyAutonomy}
+import net.codingstuffs.abilene.model.decision_making.models.Models.{DecisionMakingModel, SimpleSociotropyAutonomy, SocialImpactNSL, WeightedSociotropyAutonomy}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
 
 object ModelParamAdjuster {
 
@@ -28,6 +29,13 @@ object ModelParamAdjuster {
           (param.selfParams._1, param.selfParams._2, param.selfParams._3),
           param.groupPreferences,
           param.groupWeights
+        )
+
+      case WeightedRoundup(self: Double, group: Double) =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, self),
+          param.groupPreferences,
+          param.groupWeights.map(weights => weights._1 -> weights._2 * group / groupSize)
         )
 
       case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
