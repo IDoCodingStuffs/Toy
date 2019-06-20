@@ -32,22 +32,14 @@ object Abilene extends App {
       husband = system.actorOf(Member.props(group), s"$uniqueTime---husband")
 
       father ! Declare
-      Thread.sleep(100)
       wife ! Declare
-      Thread.sleep(100)
       husband ! Declare
-      Thread.sleep(100)
       mother ! Declare
 
-//      father ! PoisonPill
-//      wife ! PoisonPill
-//      husband ! PoisonPill
-//      mother ! PoisonPill
     })
   }
   finally {
-    Thread.sleep(1000)
+    Thread.sleep(10000)
     dataDumpGenerator ! CreateDump
-    dataDumpGenerator ! PoisonPill
   }
 }
