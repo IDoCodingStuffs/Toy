@@ -1,7 +1,7 @@
 package net.codingstuffs.abilene.model.decision_making.generators
 
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, DiscreteUniform, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Static, Uniform}
 
 import scala.util.Random
 
