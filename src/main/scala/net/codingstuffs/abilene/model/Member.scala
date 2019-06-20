@@ -6,7 +6,7 @@ import net.codingstuffs.abilene.model.decision_making.models.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Static, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, DiscreteUniform, Uniform}
 import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.WeightedRoundup
 
 object Member {
