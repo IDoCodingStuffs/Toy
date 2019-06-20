@@ -1,15 +1,8 @@
-package net.codingstuffs.abilene.model.decision_making
+package net.codingstuffs.abilene.model.decision_making.models
 
 object Models {
 
-  sealed abstract class DecisionMakingModel
-
-  final case object SelfishRoundup extends DecisionMakingModel
-  final case object EgalitarianRoundup extends DecisionMakingModel
-  final case object WeightedRoundup extends DecisionMakingModel
-
-
-  final case object FuzzyCentroid extends DecisionMakingModel
+  abstract class DecisionMakingModel
 
   //Bieling, Beck, Brown (2000)
   final case class SimpleSociotropyAutonomy(sociotropy: Double, autonomy: Double) extends DecisionMakingModel
@@ -18,4 +11,8 @@ object Models {
   //Nowak, Szamrej, Latané (1990), credit to F. Kalvas for advice
   final case object SocialImpactNSL extends DecisionMakingModel
 
+  final case object FuzzyCentroid extends DecisionMakingModel
+
+  //Baronchelli (2018)
+  //Moran process
 }

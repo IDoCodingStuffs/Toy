@@ -39,14 +39,17 @@ object Abilene extends App {
       Thread.sleep(100)
       mother ! Declare
 
-//      father ! PoisonPill
-//      wife ! PoisonPill
-//      husband ! PoisonPill
-//      mother ! PoisonPill
+
     })
   }
   finally {
     Thread.sleep(1000)
+
+    father ! PoisonPill
+    wife ! PoisonPill
+    husband ! PoisonPill
+    mother ! PoisonPill
+
     dataDumpGenerator ! CreateDump
     dataDumpGenerator ! PoisonPill
   }
