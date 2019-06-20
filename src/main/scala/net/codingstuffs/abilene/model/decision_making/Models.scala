@@ -4,7 +4,10 @@ object Models {
 
   sealed abstract class DecisionMakingModel
 
-  final case object NaiveRoundup extends DecisionMakingModel
+  final case object SelfishRoundup extends DecisionMakingModel
+  final case object EgalitarianRoundup extends DecisionMakingModel
+  final case object WeightedRoundup extends DecisionMakingModel
+
 
   final case object FuzzyCentroid extends DecisionMakingModel
 

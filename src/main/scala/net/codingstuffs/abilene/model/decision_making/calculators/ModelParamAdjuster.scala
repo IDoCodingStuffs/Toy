@@ -1,6 +1,6 @@
 package net.codingstuffs.abilene.model.decision_making.calculators
 
-import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, NaiveRoundup, SimpleSociotropyAutonomy, SocialImpactNSL, WeightedSociotropyAutonomy}
+import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, EgalitarianRoundup, SelfishRoundup, SimpleSociotropyAutonomy, SocialImpactNSL, WeightedRoundup, WeightedSociotropyAutonomy}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object ModelParamAdjuster {
@@ -9,11 +9,25 @@ object ModelParamAdjuster {
     val groupSize = param.groupWeights.keySet.size + 1
 
     model match {
-      case NaiveRoundup =>
+      case SelfishRoundup =>
         DecisionParams(
           (param.selfParams._1, param.selfParams._2, 1),
           param.groupPreferences,
           param.groupWeights.map(weights => weights._1 -> 0.0)
+        )
+
+      case EgalitarianRoundup =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, 1),
+          param.groupPreferences,
+          param.groupWeights.map(weights => weights._1 -> 1.0)
+        )
+
+      case WeightedRoundup =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, param.selfParams._3),
+          param.groupPreferences,
+          param.groupWeights
         )
 
       case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
