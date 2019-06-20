@@ -13,9 +13,8 @@ object DecisionCalculator {
     val self_val = adjustedParams.selfParams._2 * adjustedParams.selfParams._3
 
     val group_val = groupMembers
-      .map(member =>
-        adjustedParams.groupWeights(member) * adjustedParams.groupPreferences(member))
-      .sum / groupMembers.size
+      .map(member =>  params.groupWeights(member) * params.groupPreferences(member))
+      .sum / params.groupWeights.values.sum
 
     model match {
       case NaiveRoundup => self_val > 0.5
@@ -25,7 +24,6 @@ object DecisionCalculator {
         val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[SimpleSociotropyAutonomy],
           (adjustedParams, agentifiedGroup))
 
-        println(compromise.x)
         if (compromise.y > autonomy - compromise.y) compromise.x > 0.5 else self_val > 0.5
 
       case WeightedSociotropyAutonomy(sociotropy, autonomy) =>
@@ -34,7 +32,6 @@ object DecisionCalculator {
         val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[WeightedSociotropyAutonomy],
           (adjustedParams, agentifiedGroup))
 
-        println(compromise.x)
         if (compromise.y > autonomy - compromise.y) compromise.x > 0.5 else self_val > 0.5
 
       case FuzzyCentroid =>
@@ -43,10 +40,8 @@ object DecisionCalculator {
             adjustedParams.groupWeights(member) * adjustedParams.groupPreferences(member) / 2)
           .sum + (adjustedParams.selfParams._2 * adjustedParams.selfParams._3 / 2)
 
-        val areaUntilCentroid = sumAreas / 2
 
         true
-//        groupMembers.map(member => getAgentLines(model, agent1)._2, getAgentLines(model, agent2)._1)
     }
   }
 }

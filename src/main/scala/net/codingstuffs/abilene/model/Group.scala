@@ -3,7 +3,7 @@ package net.codingstuffs.abilene.model
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.ActorDataPoint
 import net.codingstuffs.abilene.model.Abilene.system
-import net.codingstuffs.abilene.model.Member.Declare
+import net.codingstuffs.abilene.model.Member.{Declare, ReceiveDecision}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object Group {
@@ -27,6 +27,7 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: DecisionParams) =>
+      group ! ReceiveDecision(sender().path.name, decision)
       dataDumpGenerator !
         ActorDataPoint(groupId, params, decision)
   }

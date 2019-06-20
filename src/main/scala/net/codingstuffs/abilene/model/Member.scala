@@ -23,7 +23,7 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = SimpleSociotropyAutonomy(0.999, 0.001)
+  implicit val decisionModel: DecisionMakingModel = WeightedSociotropyAutonomy(0.99, 0.01)
 
   private val name = self.path.name.split("---")(1)
   //!TODO: Make this specifiable
@@ -35,15 +35,12 @@ class Member(group: ActorRef)
 
   implicit var params: DecisionParams = agentParamGenerator.get
 
-  private val knownPreferences = params.groupPreferences
+  private var knownPreferences = params.groupPreferences
 
-  override def receive: Receive = onMessage(knownPreferences)
-
-  private def onMessage(knownPreferences: Map[String, Double]): Receive = {
+  override def receive: Receive = {
     case message: ReceiveDecision =>
-      if (message.decision)
-        context.become(onMessage(knownPreferences + (message.member -> 1)))
-      else context.become(onMessage(knownPreferences + (message.member -> 0)))
+      if (message.decision) knownPreferences += (message.member -> 1)
+      else knownPreferences += (message.member -> 1)
 
     case Declare =>
       group ! DataPoint(Declare(DecisionCalculator.get), params)
