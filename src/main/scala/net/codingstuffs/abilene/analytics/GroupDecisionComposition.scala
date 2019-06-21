@@ -16,4 +16,15 @@ class GroupDecisionComposition(df: DataFrame) {
 
   def getYesVoteCounts: DataFrame = processedDf.groupBy("acceptance").count
 
+  import df.sparkSession.implicits._
+  import org.apache.spark.sql.functions._
+
+  def preferencePerMember: DataFrame = df
+    .select("groupId", "selfPreference", "decision")
+    .withColumn("inclination", $"selfPreference" > 0.5)
+    .withColumn("paradox", $"decision" =!= $"inclination")
+
+  def decisionParadoxes: DataFrame = preferencePerMember
+    .groupBy("groupId")
+    .agg(sum($"paradox".cast(IntegerType)).alias("counts"))
 }
