@@ -7,6 +7,8 @@ import akka.actor.{Actor, ActorLogging, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.sum
+import org.apache.spark.sql.types.IntegerType
 
 object DataAggregatorActor {
   def props: Props = Props[DataAggregatorActor]
@@ -41,7 +43,6 @@ class DataAggregatorActor extends Actor with ActorLogging {
     case CreateDump =>
       import sparkSession.implicits._
       val memberStats = actorDataPoints.toDF()
-      memberStats.show(5, truncate = false)
 
       val groupDecisionCompositionAnalytics = new GroupDecisionComposition(memberStats)
       val memberBehaviorAnalytics = new MemberBehavior(memberStats)
@@ -57,9 +58,12 @@ class DataAggregatorActor extends Actor with ActorLogging {
 
       memberStats.show(5, truncate = false)
       groupDecisionStats.show(false)
+      groupDecisionCompositionAnalytics.preferencePerMember.show(50, truncate = false)
+      groupDecisionCompositionAnalytics.decisionParadoxes.show
 
-      groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
-      memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
+//    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
+//    groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
+//    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
 
   }
 }
