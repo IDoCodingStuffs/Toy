@@ -1,23 +1,40 @@
 package net.codingstuffs.abilene.model.decision_making.calculators.fuzzy
 
-import net.codingstuffs.abilene.model.decision_making.Models.SimpleSociotropyAutonomy
+import net.codingstuffs.abilene.model.decision_making.models.Models.{SimpleDecisionVsCompromise, WeightedDecisionVsCompromise}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
 object AgentFuzzifier {
 
-  case class Point(x: Double, y: Double)
+  case class Point(x: BigDecimal, y: BigDecimal)
 
   case class Line(p1: Point, p2: Point)
 
-  def getAgentLines(implicit model: SimpleSociotropyAutonomy, param: DecisionParams): (Line, Line) = {
-    val peakPoint = Point(param.selfParams._2, model.autonomy)
-    val leftPoint = Point(param.selfParams._2 - model.sociotropy / 2, 0)
-    val rightPoint = Point(param.selfParams._2 + model.sociotropy / 2, 0)
+  def getAgentLines(implicit model: SimpleDecisionVsCompromise, param: DecisionParams): (Line, Line) = {
+    val peakPoint = Point(param.selfParams._2, param.selfParams._3)
+    val leftPoint = Point(param.selfParams._2 - model.decision / 2, 0)
+    val rightPoint = Point(param.selfParams._2 + model.decision / 2, 0)
 
     (Line(leftPoint, peakPoint), Line(peakPoint, rightPoint))
   }
 
-  def getIntersect(implicit model: SimpleSociotropyAutonomy,
+  def getIntersect(implicit model: SimpleDecisionVsCompromise,
+                   params: (DecisionParams, DecisionParams)): Point = {
+    val agent1 =
+      if (params._1.selfParams._2 < params._2.selfParams._2) params._1 else params._2
+    val agent2 = if (params._1.selfParams._2 >= params._2.selfParams._2) params._1 else params._2
+
+    lineIntersect(getAgentLines(model, agent1)._2, getAgentLines(model, agent2)._1)
+  }
+
+  def getAgentLines(implicit model: WeightedDecisionVsCompromise, param: DecisionParams): (Line, Line) = {
+    val peakPoint = Point(param.selfParams._2, model.compromise)
+    val leftPoint = Point(param.selfParams._2 - model.decision / 2, 0)
+    val rightPoint = Point(param.selfParams._2 + model.decision / 2, 0)
+
+    (Line(leftPoint, peakPoint), Line(peakPoint, rightPoint))
+  }
+
+  def getIntersect(implicit model: WeightedDecisionVsCompromise,
                    params: (DecisionParams, DecisionParams)): Point = {
     val agent1 =
       if (params._1.selfParams._2 < params._2.selfParams._2) params._1 else params._2

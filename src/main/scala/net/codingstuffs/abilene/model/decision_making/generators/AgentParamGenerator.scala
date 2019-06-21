@@ -1,7 +1,7 @@
 package net.codingstuffs.abilene.model.decision_making.generators
 
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Static, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Discrete, Uniform}
 
 import scala.util.Random
 
@@ -11,21 +11,23 @@ object AgentParamGenerator {
 
 }
 
-class AgentParamGenerator(random: Random) {
+class AgentParamGenerator(randomGenerators: (Random, Random)) {
 
   implicit var self: String = _
   implicit var memberNames: Set[String] = _
 
-  def getSelfParams(name: String): (String, Double, Double) = (self, random.nextDouble(), random.nextDouble())
+  val preferenceGenerator = randomGenerators._1
+  val weightsGenerator = randomGenerators._2
+
+
+  def getSelfParams(name: String): (String, Double, Double) =
+    (self, preferenceGenerator.nextDouble(), weightsGenerator.nextDouble())
 
   def groupPreferences(implicit groupMembers: Set[String]): Map[String, Double] =
-    groupMembers.filter(member => member != self).map(member => member -> random.nextDouble).toMap
+    groupMembers.filter(member => member != self).map(member => member -> preferenceGenerator.nextDouble).toMap
 
   def groupWeights(implicit groupMembers: Set[String], max_deviation: Int = 3): Map[String, Double] =
-    groupMembers.filter(member => member != self).map(member => member -> random.nextDouble).toMap
-
-  def normalizeWeights(weights: Map[String, Double]): Map[String, Double] =
-    weights.map(weight => weight._1 -> weight._2 * (weights.keySet.size / weights.values.sum))
+    groupMembers.filter(member => member != self).map(member => member -> weightsGenerator.nextDouble).toMap
 
   def get: DecisionParams = DecisionParams(getSelfParams(self), groupPreferences, groupWeights)
 }

@@ -1,5 +1,8 @@
 package net.codingstuffs.abilene.analytics
 
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+
 import akka.actor.{Actor, ActorLogging, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
@@ -8,8 +11,15 @@ import org.apache.spark.sql.SparkSession
 object DataAggregatorActor {
   def props: Props = Props[DataAggregatorActor]
 
+  case class ActorRawDataPoint(groupId: String,
+                               decisionParams: DecisionParams,
+                               decision: Boolean)
+
   case class ActorDataPoint(groupId: String,
-                            decisionParams: DecisionParams,
+                            selfPreference: Double,
+                            selfWeight: Double,
+                            groupPreference: Seq[Double],
+                            groupWeights: Seq[Double],
                             decision: Boolean)
 
   case class CreateDump()
@@ -17,22 +27,39 @@ object DataAggregatorActor {
 }
 
 class DataAggregatorActor extends Actor with ActorLogging {
-  var caseClasses: Seq[ActorDataPoint] = Seq()
+  var actorDataPoints: Seq[ActorDataPoint] = Seq()
 
-  val sparkSession: SparkSession = SparkSession.builder().master("local").getOrCreate()
+  val sparkSession: SparkSession = SparkSession.builder()
+    .config("spark.cores.max", 8)
+    .config("spark.executor.cores", 2)
+    .master("local[*]").getOrCreate()
 
   override def receive: Receive = {
     case dataPoint: ActorDataPoint =>
-      caseClasses = caseClasses :+ dataPoint
+      actorDataPoints = actorDataPoints :+ dataPoint
+
     case CreateDump =>
       import sparkSession.implicits._
-      val dump = caseClasses.toDF()
-      dump.show(25, false)
+      val memberStats = actorDataPoints.toDF()
+      memberStats.show(5, truncate = false)
 
-      //!TODO: When groupSize is parameterized this needs to be updated
-      val groupDecisionCompositionAnalytics =  new GroupDecisionComposition(dump)
+      val groupDecisionCompositionAnalytics = new GroupDecisionComposition(memberStats)
+      val memberBehaviorAnalytics = new MemberBehavior(memberStats)
 
-      log.info(groupDecisionCompositionAnalytics.getConsensusVariance.toString)
-      groupDecisionCompositionAnalytics.getYesVoteCounts.show
+      val jobRunAtDateTime = Calendar.getInstance.getTimeInMillis
+
+      val groupDecisionStats = groupDecisionCompositionAnalytics
+        .getYesVoteCounts
+        .orderBy("acceptance")
+
+//      val memberBehaviorStats = memberBehaviorAnalytics
+//      .averagedPreferenceKnowledge
+
+      memberStats.show(5, truncate = false)
+      groupDecisionStats.show(false)
+
+      groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
+      memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
+
   }
 }

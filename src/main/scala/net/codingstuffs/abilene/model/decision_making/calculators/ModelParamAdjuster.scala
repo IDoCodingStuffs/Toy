@@ -1,7 +1,8 @@
 package net.codingstuffs.abilene.model.decision_making.calculators
 
-import net.codingstuffs.abilene.model.decision_making.Models.{DecisionMakingModel, NaiveRoundup, SimpleSociotropyAutonomy, SocialImpactNSL, WeightedSociotropyAutonomy}
+import net.codingstuffs.abilene.model.decision_making.models.Models.{DecisionMakingModel, SimpleDecisionVsCompromise, SocialImpactNSL, WeightedDecisionVsCompromise}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
 
 object ModelParamAdjuster {
 
@@ -9,25 +10,46 @@ object ModelParamAdjuster {
     val groupSize = param.groupWeights.keySet.size + 1
 
     model match {
-      case NaiveRoundup =>
+      case SelfishRoundup =>
         DecisionParams(
           (param.selfParams._1, param.selfParams._2, 1),
           param.groupPreferences,
           param.groupWeights.map(weights => weights._1 -> 0.0)
         )
 
-      case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
-        this normalize DecisionParams(
+      case EgalitarianRoundup =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, 1),
+          param.groupPreferences,
+          param.groupWeights.map(weights => weights._1 -> 1.0)
+        )
+
+      case WeightedRoundup =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, param.selfParams._3),
+          param.groupPreferences,
+          param.groupWeights
+        )
+
+      case WeightedRoundup(sociotropy: Double, autonomy: Double) =>
+        DecisionParams(
+          (param.selfParams._1, param.selfParams._2, param.selfParams._3 * sociotropy),
+          param.groupPreferences,
+          param.groupWeights.map(weights => weights._1 -> weights._2 * autonomy / (groupSize + 1))
+        )
+
+      case SimpleDecisionVsCompromise(sociotropy, autonomy) =>
+        DecisionParams(
           (param.selfParams._1, param.selfParams._2, 1.0),
           param.groupPreferences,
           param.groupWeights.map(weights => weights._1 -> 1.0)
         )
 
-      case WeightedSociotropyAutonomy(sociotropy, autonomy) =>
+      case WeightedDecisionVsCompromise(sociotropy, autonomy) =>
         this normalize DecisionParams(
-          (param.selfParams._1, param.selfParams._2, param.selfParams._3),
+          (param.selfParams._1, param.selfParams._2, 1.0),
           param.groupPreferences,
-          param.groupPreferences.map(weights => weights._1 -> weights._2 * param.groupPreferences(weights._1))
+          param.groupWeights.map(weights => weights._1 -> weights._2 * param.groupPreferences(weights._1))
         )
 
       case SocialImpactNSL => ???
@@ -35,10 +57,11 @@ object ModelParamAdjuster {
   }
 
   def normalize(param: DecisionParams): DecisionParams = {
-    val factor = (param.groupWeights.size + 1) / (param.groupWeights.values.sum + param.selfParams._3)
+
+    val factor = param.groupWeights.size / param.groupWeights.values.sum
 
     DecisionParams(
-      (param.selfParams._1, param.selfParams._2, factor * param.selfParams._3),
+      (param.selfParams._1, param.selfParams._2, param.selfParams._3),
       param.groupPreferences,
       param.groupWeights.map(weights => weights._1 -> factor * weights._2)
     )
