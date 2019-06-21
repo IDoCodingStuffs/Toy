@@ -24,9 +24,9 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.4, 0.6)
+  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.33, 0.67)
 
-  private val name = self.path.name.split("---")(1)
+  private val name = self.path.name.split("@@@")(1)
   //!TODO: Make this specifiable
   private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Uniform.GENERATOR)
 

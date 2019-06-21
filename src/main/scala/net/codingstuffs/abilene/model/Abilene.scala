@@ -1,10 +1,18 @@
 package net.codingstuffs.abilene.model
 
+import java.time.Duration
+
 import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
 
 import scala.util.Random
+import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+
+import scala.concurrent.duration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 object Abilene extends App {
 
@@ -19,26 +27,21 @@ object Abilene extends App {
   var group, father, mother, wife, husband: ActorRef = _
   val groupMembers = Set("father", "mother", "wife", "husband")
 
+  val random = new Random
+
   try {
     1.to(extraIterations).foreach(_ => {
-      var uniqueTime = System.nanoTime()
-      val random = new Random
+      var groupId = math.abs(random.nextLong)
+      implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
-      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"${math.abs(random.nextLong)}---group")
+      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$groupId---group")
 
-      father = system.actorOf(Member.props(group), s"$uniqueTime---father")
-      mother = system.actorOf(Member.props(group), s"$uniqueTime---mother")
-      wife = system.actorOf(Member.props(group), s"$uniqueTime---wife")
-      husband = system.actorOf(Member.props(group), s"$uniqueTime---husband")
+      father = system.actorOf(Member.props(group), s"$groupId@@@father")
+      mother = system.actorOf(Member.props(group), s"$groupId@@@mother")
+      wife = system.actorOf(Member.props(group), s"$groupId@@@wife")
+      husband = system.actorOf(Member.props(group), s"$groupId@@@husband")
 
       father ! Declare
-      Thread.sleep(10)
-      wife ! Declare
-      Thread.sleep(10)
-      husband ! Declare
-      Thread.sleep(10)
-      mother ! Declare
-
     })
   }
   finally {
