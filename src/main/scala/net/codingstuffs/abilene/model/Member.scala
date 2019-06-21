@@ -6,12 +6,13 @@ import net.codingstuffs.abilene.model.decision_making.models.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Discrete, Uniform}
-import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.WeightedRoundup
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, Discrete, FoldedGaussian, Uniform}
+
+import scala.util.Random
 
 object Member {
-  def props(group: ActorRef): Props =
-    Props(new Member(group))
+  def props(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerator: Random): Props =
+    Props(new Member(group, decisionModel, randomGenerator))
 
   final case class ReceiveDecision(member: String, decision: Boolean)
 
@@ -19,16 +20,14 @@ object Member {
 
 }
 
-class Member(group: ActorRef)
+class Member(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerator: Random)
   extends Actor with ActorLogging{
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.9999, 0.0001)
-
   private val name = self.path.name.split("@@@")(1)
   //!TODO: Make this specifiable
-  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(Uniform.GENERATOR)
+  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(randomGenerator)
 
   agentParamGenerator.self = name
   //!TODO: Generalize this
@@ -46,6 +45,6 @@ class Member(group: ActorRef)
     case Declare =>
       val param = DecisionParams(params.selfParams, knownPreferences, params.groupWeights)
       val calc = new DecisionCalculator(param)
-      group ! DataPoint(Declare(calc.get), param)
+      group ! DataPoint(Declare(calc.get(decisionModel)), param)
   }
 }

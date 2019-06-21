@@ -1,5 +1,6 @@
 package net.codingstuffs.abilene.analytics
 
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 import akka.actor.{Actor, ActorLogging, Props}
@@ -45,7 +46,7 @@ class DataAggregatorActor extends Actor with ActorLogging {
       val groupDecisionCompositionAnalytics = new GroupDecisionComposition(memberStats)
       val memberBehaviorAnalytics = new MemberBehavior(memberStats)
 
-      val jobRunAtDateTime = Calendar.getInstance.getTime
+      val jobRunAtDateTime = Calendar.getInstance.getTimeInMillis
 
       val groupDecisionStats = groupDecisionCompositionAnalytics
         .getYesVoteCounts
@@ -56,6 +57,8 @@ class DataAggregatorActor extends Actor with ActorLogging {
 
       memberStats.show(5, truncate = false)
 
-    //groupDecisionStats.write.csv(s"data/decision_composition/$jobRunAtDateTime/yes_vote_counts.csv")
+    groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
+    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
+
   }
 }

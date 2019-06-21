@@ -11,18 +11,19 @@ object AgentParamGenerator {
 
 }
 
-class AgentParamGenerator(random: Random) {
+class AgentParamGenerator(preferenceGenerator: Random, weightsGenerator: Random) {
 
   implicit var self: String = _
   implicit var memberNames: Set[String] = _
 
-  def getSelfParams(name: String): (String, Double, Double) = (self, random.nextDouble(), random.nextDouble())
+  def getSelfParams(name: String): (String, Double, Double) =
+    (self, preferenceGenerator.nextDouble(), weightsGenerator.nextDouble())
 
   def groupPreferences(implicit groupMembers: Set[String]): Map[String, Double] =
-    groupMembers.filter(member => member != self).map(member => member -> random.nextDouble).toMap
+    groupMembers.filter(member => member != self).map(member => member -> preferenceGenerator.nextDouble).toMap
 
   def groupWeights(implicit groupMembers: Set[String], max_deviation: Int = 3): Map[String, Double] =
-    groupMembers.filter(member => member != self).map(member => member -> random.nextDouble).toMap
+    groupMembers.filter(member => member != self).map(member => member -> weightsGenerator.nextDouble).toMap
 
   def get: DecisionParams = DecisionParams(getSelfParams(self), groupPreferences, groupWeights)
 }
