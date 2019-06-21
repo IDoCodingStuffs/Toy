@@ -6,7 +6,7 @@ import net.codingstuffs.abilene.model.decision_making.models.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Static, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Discrete, Uniform}
 import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.WeightedRoundup
 
 object Member {
@@ -24,7 +24,7 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.5, 0.5)
+  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.9999, 0.0001)
 
   private val name = self.path.name.split("@@@")(1)
   //!TODO: Make this specifiable

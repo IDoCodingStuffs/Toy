@@ -30,18 +30,18 @@ class DecisionCalculator(params: DecisionParams) {
         (self_val + group_sum) / (adjustedParams.groupWeights.values.sum + adjustedParams.selfParams._3) > 0.5
       }
 
-      case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
+      case SimpleDecisionVsCompromise(sociotropy, autonomy) =>
         val agentifiedGroup = DecisionParams(("group", group_val, 1), adjustedParams.groupPreferences, adjustedParams.groupWeights)
 
-        val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[SimpleSociotropyAutonomy],
+        val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[SimpleDecisionVsCompromise],
           (adjustedParams, agentifiedGroup))
 
         if (compromise.y > autonomy - compromise.y) compromise.x > 0.5 else self_val > 0.5
 
-      case WeightedSociotropyAutonomy(sociotropy, autonomy) =>
+      case WeightedDecisionVsCompromise(sociotropy, autonomy) =>
         val agentifiedGroup = DecisionParams(("group", group_val, 1), adjustedParams.groupPreferences, adjustedParams.groupWeights)
 
-        val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[WeightedSociotropyAutonomy],
+        val compromise = AgentFuzzifier.getIntersect(model.asInstanceOf[WeightedDecisionVsCompromise],
           (adjustedParams, agentifiedGroup))
 
         if (compromise.y > autonomy - compromise.y) compromise.x > 0.5 else self_val > 0.5

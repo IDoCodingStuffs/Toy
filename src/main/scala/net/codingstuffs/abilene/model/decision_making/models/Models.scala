@@ -4,9 +4,10 @@ object Models {
 
   abstract class DecisionMakingModel
 
-  //Bieling, Beck, Brown (2000)
-  final case class SimpleSociotropyAutonomy(sociotropy: Double, autonomy: Double) extends DecisionMakingModel
-  final case class WeightedSociotropyAutonomy(sociotropy: Double, autonomy: Double) extends DecisionMakingModel
+  //Naomi E. Leonard ; Tian Shen ; Benjamin Nabet ; Luca Scardovi ; Iain D. Couzin ; Simon A. Levin
+  //Proceedings of the National Academy of Sciences, 03 January 2012, Vol.109(1), p.227
+  final case class SimpleDecisionVsCompromise(decision: Double, compromise: Double) extends DecisionMakingModel
+  final case class WeightedDecisionVsCompromise(decision: Double, compromise: Double) extends DecisionMakingModel
 
   //Nowak, Szamrej, Latané (1990), credit to F. Kalvas for advice
   final case object SocialImpactNSL extends DecisionMakingModel
