@@ -56,9 +56,10 @@ class DataAggregatorActor extends Actor with ActorLogging {
 //      .averagedPreferenceKnowledge
 
       memberStats.show(5, truncate = false)
+      groupDecisionStats.show(false)
 
-    groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
-    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
+      groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
+      memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
 
   }
 }

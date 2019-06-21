@@ -11,7 +11,7 @@ import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, D
 import scala.util.Random
 
 object Member {
-  def props(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerator: Random): Props =
+  def props(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerator: (Random, Random)): Props =
     Props(new Member(group, decisionModel, randomGenerator))
 
   final case class ReceiveDecision(member: String, decision: Boolean)
@@ -20,14 +20,14 @@ object Member {
 
 }
 
-class Member(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerator: Random)
+class Member(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerators: (Random, Random))
   extends Actor with ActorLogging{
 
   import Member._
 
   private val name = self.path.name.split("@@@")(1)
   //!TODO: Make this specifiable
-  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(randomGenerator)
+  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(randomGenerators)
 
   agentParamGenerator.self = name
   //!TODO: Generalize this

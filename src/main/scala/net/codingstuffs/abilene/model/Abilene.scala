@@ -1,8 +1,6 @@
 package net.codingstuffs.abilene.model
 
-import java.time.Duration
-
-import akka.actor.{ActorRef, ActorSystem, PoisonPill}
+import akka.actor.{ActorRef, ActorSystem}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
 
@@ -11,11 +9,11 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.model.decision_making.generators.random.Uniform
-import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.SelfishRoundup
+import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, Discrete, FoldedGaussian, Uniform}
+import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
+import net.codingstuffs.abilene.model.decision_making.models.Models.DecisionMakingModel
 
-import scala.concurrent.duration
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 
 object Abilene extends App {
 
@@ -25,6 +23,50 @@ object Abilene extends App {
 
   val extraIterations: Int = config.getInt("numberGroupsSimulated")
 
+  //!TODO: Refactor this plz future me thx
+  val decisionModels: Seq[DecisionMakingModel] = {
+    config.getString("decisionModels").split(";")
+      .map({
+        case "SelfishRoundup" => SelfishRoundup
+        case "EgalitarianRoundup" => EgalitarianRoundup
+        case "WeightedRoundup" => SelfishRoundup
+        case sasScale: String if sasScale.startsWith("WeightedRoundup(") =>
+          WeightedRoundup(
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(sasScale).get.split(",")(0).toDouble,
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(sasScale).get.split(",")(1).toDouble
+          )
+      })
+  }
+  val preferenceGenerators: Seq[Random] = {
+    config.getString("preferenceGenerators").split(";")
+      .map({
+        case "Uniform" => Uniform.GENERATOR
+        case discrete: String if discrete.startsWith("Discrete") =>
+          Discrete.GENERATOR("""(?<=\()(.*?)(?=\))""".r.findFirstIn(discrete).get.split(",").map(_.toDouble).toSeq)
+        case beta: String if beta.startsWith("Beta") =>
+          Beta.GENERATOR(
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(beta).get.split(",")(0).toDouble,
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(beta).get.split(",")(1).toDouble)
+        case gaussian: String if gaussian.startsWith("FoldedGaussian") =>
+          FoldedGaussian.GENERATOR(
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(gaussian).get.toDouble)
+      }).toSeq
+  }
+  val weightsGenerators: Seq[Random] = {
+    config.getString("preferenceGenerators").split(";")
+      .map({
+        case "Uniform" => Uniform.GENERATOR
+        case discrete: String if discrete.startsWith("Discrete") =>
+          Discrete.GENERATOR("""(?<=\()(.*?)(?=\))""".r.findFirstIn(discrete).get.split(",").map(_.toDouble).toSeq)
+        case beta: String if beta.startsWith("Beta") =>
+          Beta.GENERATOR(
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(beta).get.split(",")(0).toDouble,
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(beta).get.split(",")(0).toDouble)
+        case gaussian: String if gaussian.startsWith("FoldedGaussian") =>
+          FoldedGaussian.GENERATOR(
+            """(?<=\()(.*?)(?=\))""".r.findFirstIn(gaussian).get.toDouble)
+      }).toSeq
+  }
 
   val system: ActorSystem = ActorSystem("Abilene0")
   val dataDumpGenerator = system.actorOf(DataAggregatorActor.props, "dataDumper")
@@ -41,16 +83,19 @@ object Abilene extends App {
       group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$groupId---group")
 
       father = system.actorOf(
-        Member.props(group, SelfishRoundup, Uniform.GENERATOR),
+        Member.props(group, decisionModels.head, (preferenceGenerators.head, weightsGenerators.head)),
         s"$groupId@@@father")
       mother = system.actorOf(
-        Member.props(group, SelfishRoundup, Uniform.GENERATOR),
+        Member.props(group, decisionModels(1), (preferenceGenerators(1), weightsGenerators(1))),
         s"$groupId@@@mother")
       wife = system.actorOf(
-        Member.props(group, SelfishRoundup, Uniform.GENERATOR), s"$groupId@@@wife")
-      husband = system.actorOf(Member.props(group, SelfishRoundup, Uniform.GENERATOR), s"$groupId@@@husband")
+        Member.props(group, decisionModels(2), (preferenceGenerators(2), weightsGenerators(2))),
+        s"$groupId@@@wife")
+      husband = system.actorOf(
+        Member.props(group, decisionModels(3), (preferenceGenerators(3), weightsGenerators(3))),
+        s"$groupId@@@husband")
 
-      father ! Declare
+      father ? Declare
     })
   }
   finally {

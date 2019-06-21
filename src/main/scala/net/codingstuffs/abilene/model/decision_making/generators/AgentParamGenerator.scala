@@ -11,10 +11,14 @@ object AgentParamGenerator {
 
 }
 
-class AgentParamGenerator(preferenceGenerator: Random, weightsGenerator: Random) {
+class AgentParamGenerator(randomGenerators: (Random, Random)) {
 
   implicit var self: String = _
   implicit var memberNames: Set[String] = _
+
+  val preferenceGenerator = randomGenerators._1
+  val weightsGenerator = randomGenerators._2
+
 
   def getSelfParams(name: String): (String, Double, Double) =
     (self, preferenceGenerator.nextDouble(), weightsGenerator.nextDouble())
