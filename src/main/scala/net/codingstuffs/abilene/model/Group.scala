@@ -4,8 +4,8 @@ import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
 
 import scala.concurrent.duration.{Duration, FiniteDuration}
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.ActorDataPoint
-import net.codingstuffs.abilene.model.Abilene.{system, wife, husband, mother}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
+import net.codingstuffs.abilene.model.Abilene.{husband, mother, system, wife}
 import net.codingstuffs.abilene.model.Member.{Declare, ReceiveDecision}
 import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
 
@@ -37,7 +37,11 @@ class Group(members: Set[String], dataDumpGenerator: ActorRef) extends Actor wit
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: DecisionParams) =>
       dataDumpGenerator !
-        ActorDataPoint(groupId, params, decision)
+      //!TODO: Verify order of prefs vs weights
+        ActorDataPoint(groupId, params.selfParams._2, params.selfParams._3,
+          params.groupPreferences.values.toSeq, params.groupWeights.values.toSeq, decision)
+      dataDumpGenerator !
+        ActorRawDataPoint(groupId, params, decision)
       val memberName = sender().path.name.split("@@@")(1)
       var decisionFuture: Future[Any] = null
 
