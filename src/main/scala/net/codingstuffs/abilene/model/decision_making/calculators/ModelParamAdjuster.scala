@@ -33,9 +33,9 @@ object ModelParamAdjuster {
 
       case WeightedRoundup(self: Double, group: Double) =>
         DecisionParams(
-          (param.selfParams._1, param.selfParams._2, self),
+          (param.selfParams._1, param.selfParams._2, param.selfParams._3 * self),
           param.groupPreferences,
-          param.groupWeights.map(weights => weights._1 -> weights._2 * group / groupSize)
+          param.groupWeights.map(weights => weights._1 -> weights._2 * group / (groupSize + 1))
         )
 
       case SimpleSociotropyAutonomy(sociotropy, autonomy) =>

@@ -30,12 +30,12 @@ class DataAggregatorActor extends Actor with ActorLogging {
     case CreateDump =>
       import sparkSession.implicits._
       val dump = caseClasses.toDF()
-      dump.show(25, false)
+      dump.show(5, false)
 
       //!TODO: When groupSize is parameterized this needs to be updated
       val groupDecisionCompositionAnalytics =  new GroupDecisionComposition(dump)
 
       log.info(groupDecisionCompositionAnalytics.getConsensusVariance.toString)
-      groupDecisionCompositionAnalytics.getYesVoteCounts.show
+      groupDecisionCompositionAnalytics.getYesVoteCounts.orderBy("acceptance").show
   }
 }

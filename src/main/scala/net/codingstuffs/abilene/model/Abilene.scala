@@ -45,7 +45,7 @@ object Abilene extends App {
     })
   }
   finally {
-    Thread.sleep(10000)
+    Thread.sleep(120000)
     dataDumpGenerator ! CreateDump
   }
 }

@@ -24,9 +24,11 @@ class DecisionCalculator(params: DecisionParams) {
 
       case EgalitarianRoundup => (adjustedParams.selfParams._2 + adjustedParams.groupPreferences.values.sum) / (groupMembers.size + 1) > 0.5
 
-      case WeightedRoundup => (self_val * + group_sum) / (params.groupWeights.values.sum + adjustedParams.selfParams._3) > 0.5
+      case WeightedRoundup => (self_val + group_sum) / (params.groupWeights.values.sum + adjustedParams.selfParams._3) > 0.5
 
-      case WeightedRoundup(self: Double, group: Double) => (self_val + group_sum) / (adjustedParams.groupWeights.values.sum + adjustedParams.selfParams._3) > 0.5
+      case WeightedRoundup(self: Double, group: Double) => {
+        (self_val + group_sum) / (adjustedParams.groupWeights.values.sum + adjustedParams.selfParams._3) > 0.5
+      }
 
       case SimpleSociotropyAutonomy(sociotropy, autonomy) =>
         val agentifiedGroup = DecisionParams(("group", group_val, 1), adjustedParams.groupPreferences, adjustedParams.groupWeights)

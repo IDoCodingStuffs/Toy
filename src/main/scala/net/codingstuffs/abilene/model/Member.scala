@@ -24,7 +24,7 @@ class Member(group: ActorRef)
 
   import Member._
 
-  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.33, 0.67)
+  implicit val decisionModel: DecisionMakingModel = WeightedRoundup(0.5, 0.5)
 
   private val name = self.path.name.split("@@@")(1)
   //!TODO: Make this specifiable
