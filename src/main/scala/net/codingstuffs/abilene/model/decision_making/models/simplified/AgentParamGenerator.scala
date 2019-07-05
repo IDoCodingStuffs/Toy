@@ -1,7 +1,6 @@
-package net.codingstuffs.abilene.model.decision_making.generators
+package net.codingstuffs.abilene.model.decision_making.models.simplified
 
-import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, FoldedGaussian, Discrete, Uniform}
+import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
 
 import scala.util.Random
 

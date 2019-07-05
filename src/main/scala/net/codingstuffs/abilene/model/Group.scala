@@ -7,7 +7,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
 import net.codingstuffs.abilene.model.Abilene.{husband, mother, system, wife}
 import net.codingstuffs.abilene.model.Member.{Declare, ReceiveDecision}
-import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 

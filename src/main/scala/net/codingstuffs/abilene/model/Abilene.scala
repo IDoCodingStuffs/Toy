@@ -10,8 +10,8 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, Discrete, FoldedGaussian, Uniform}
-import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
-import net.codingstuffs.abilene.model.decision_making.models.Models.DecisionMakingModel
+import net.codingstuffs.abilene.model.decision_making.models.DecisionMakingModel
+import net.codingstuffs.abilene.model.decision_making.models.simplified.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
 
 import scala.concurrent.duration.FiniteDuration
 

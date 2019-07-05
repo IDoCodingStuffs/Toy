@@ -5,7 +5,7 @@ import java.util.Calendar
 
 import akka.actor.{Actor, ActorLogging, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
-import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.sum
 import org.apache.spark.sql.types.IntegerType
@@ -56,7 +56,7 @@ class DataAggregatorActor extends Actor with ActorLogging {
 //      val memberBehaviorStats = memberBehaviorAnalytics
 //      .averagedPreferenceKnowledge
 
-      memberStats.show(5, truncate = false)
+      memberStats.show(100, truncate = false)
       groupDecisionStats.show(false)
       groupDecisionCompositionAnalytics.preferencePerMember.show(50, truncate = false)
 

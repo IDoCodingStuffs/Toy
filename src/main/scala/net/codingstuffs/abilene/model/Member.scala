@@ -2,11 +2,11 @@ package net.codingstuffs.abilene.model
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import net.codingstuffs.abilene.model.Group.DataPoint
-import net.codingstuffs.abilene.model.decision_making.models.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
-import net.codingstuffs.abilene.model.decision_making.generators.{AgentParamGenerator, GroupParamGenerator}
-import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, Discrete, FoldedGaussian, Uniform}
+import net.codingstuffs.abilene.model.decision_making.generators.GroupParamGenerator
+import net.codingstuffs.abilene.model.decision_making.models.DecisionMakingModel
+import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator
+import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
 
 import scala.util.Random
 
@@ -21,7 +21,7 @@ object Member {
 }
 
 class Member(group: ActorRef, decisionModel: DecisionMakingModel, randomGenerators: (Random, Random))
-  extends Actor with ActorLogging{
+  extends Actor with ActorLogging {
 
   import Member._
 

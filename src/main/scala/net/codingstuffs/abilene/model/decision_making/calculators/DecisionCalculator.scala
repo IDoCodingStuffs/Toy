@@ -1,9 +1,10 @@
 package net.codingstuffs.abilene.model.decision_making.calculators
 
-import net.codingstuffs.abilene.model.decision_making.models.Models._
 import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier
-import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
+import net.codingstuffs.abilene.model.decision_making.models.DecisionMakingModel
+import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.simplified.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
+import net.codingstuffs.abilene.model.decision_making.models.simplified.Models.{FuzzyCentroid, SimpleDecisionVsCompromise, WeightedDecisionVsCompromise}
 
 class DecisionCalculator(params: DecisionParams) {
   def get(implicit model: DecisionMakingModel): Boolean = {
