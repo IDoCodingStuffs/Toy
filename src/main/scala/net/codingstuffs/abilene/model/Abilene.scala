@@ -22,10 +22,10 @@ object Abilene extends App {
   val config = ConfigFactory.load()
 
   val extraIterations: Int = config.getInt("numberGroupsSimulated")
-
+  System.setProperty("hadoop.home.dir", "C:\\hadoop-2.8.0")
   //!TODO: Refactor this plz future me thx
 
-  val studyModel = StochasticAgent
+  val studyModel = MaslowianAgent
   val decisionModels: Seq[DecisionMakingModel] = {
     config.getString("decisionModels").split(";")
       .map({

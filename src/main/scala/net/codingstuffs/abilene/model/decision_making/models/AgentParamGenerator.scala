@@ -25,10 +25,9 @@ class AgentParamGenerator(studyModel: AgentBehaviorModel, randomGenerators: (Ran
     studyModel match {
       case MaslowianAgent => {
         val maslowianParams = new MaslowianParamGenerator(randomGenerators._1)
-        val direction = if (randomGenerators._1.nextBoolean) 1 else -1
         (self,
-          0.5 + direction * (1 / maslowianParams.getMaslowianSum(self)),
-          weightsGenerator.nextDouble())
+          preferenceGenerator.nextDouble(),
+          Math.pow(maslowianParams.getMaslowianSum(self), -1) * weightsGenerator.nextDouble())
       }
       case StochasticAgent => (self, preferenceGenerator.nextDouble(), weightsGenerator.nextDouble())
     }

@@ -33,6 +33,7 @@ class DataAggregatorActor extends Actor with ActorLogging {
 
   val sparkSession: SparkSession = SparkSession.builder()
     .config("spark.cores.max", 8)
+    .config("driver-memory", "16g")
     .config("spark.executor.cores", 2)
     .master("local[*]").getOrCreate()
 
@@ -56,7 +57,6 @@ class DataAggregatorActor extends Actor with ActorLogging {
       //      val memberBehaviorStats = memberBehaviorAnalytics
       //      .averagedPreferenceKnowledge
 
-      memberStats.show(100, truncate = false)
       groupDecisionStats.show(false)
       groupDecisionCompositionAnalytics.preferencePerMember.show(50, truncate = false)
 
