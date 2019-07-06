@@ -10,7 +10,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.model.decision_making.generators.random.{Beta, Discrete, FoldedGaussian, Uniform}
-import net.codingstuffs.abilene.model.decision_making.models.DecisionMakingModel
+import net.codingstuffs.abilene.model.decision_making.models.{DecisionMakingModel, MaslowianAgent, StochasticAgent}
 import net.codingstuffs.abilene.model.decision_making.models.simplified.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
 
 import scala.concurrent.duration.FiniteDuration
@@ -24,6 +24,8 @@ object Abilene extends App {
   val extraIterations: Int = config.getInt("numberGroupsSimulated")
 
   //!TODO: Refactor this plz future me thx
+
+  val studyModel = StochasticAgent
   val decisionModels: Seq[DecisionMakingModel] = {
     config.getString("decisionModels").split(";")
       .map({
@@ -83,16 +85,16 @@ object Abilene extends App {
       group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$groupId---group")
 
       father = system.actorOf(
-        Member.props(group, decisionModels.head, (preferenceGenerators.head, weightsGenerators.head)),
+        Member.props(group, studyModel, decisionModels.head, (preferenceGenerators.head, weightsGenerators.head)),
         s"$groupId@@@father")
       mother = system.actorOf(
-        Member.props(group, decisionModels(1), (preferenceGenerators(1), weightsGenerators(1))),
+        Member.props(group, studyModel, decisionModels(1), (preferenceGenerators(1), weightsGenerators(1))),
         s"$groupId@@@mother")
       wife = system.actorOf(
-        Member.props(group, decisionModels(2), (preferenceGenerators(2), weightsGenerators(2))),
+        Member.props(group, studyModel, decisionModels(2), (preferenceGenerators(2), weightsGenerators(2))),
         s"$groupId@@@wife")
       husband = system.actorOf(
-        Member.props(group, decisionModels(3), (preferenceGenerators(3), weightsGenerators(3))),
+        Member.props(group, studyModel, decisionModels(3), (preferenceGenerators(3), weightsGenerators(3))),
         s"$groupId@@@husband")
 
       father ? Declare

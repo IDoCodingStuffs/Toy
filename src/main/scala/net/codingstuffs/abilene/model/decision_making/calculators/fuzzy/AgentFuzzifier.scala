@@ -1,6 +1,6 @@
 package net.codingstuffs.abilene.model.decision_making.calculators.fuzzy
 
-import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
 import net.codingstuffs.abilene.model.decision_making.models.simplified.Models.{SimpleDecisionVsCompromise, WeightedDecisionVsCompromise}
 
 object AgentFuzzifier {

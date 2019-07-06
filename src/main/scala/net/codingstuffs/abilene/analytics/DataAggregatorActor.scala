@@ -5,7 +5,7 @@ import java.util.Calendar
 
 import akka.actor.{Actor, ActorLogging, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
-import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.sum
 import org.apache.spark.sql.types.IntegerType
@@ -53,8 +53,8 @@ class DataAggregatorActor extends Actor with ActorLogging {
         .getYesVoteCounts
         .orderBy("acceptance")
 
-//      val memberBehaviorStats = memberBehaviorAnalytics
-//      .averagedPreferenceKnowledge
+      //      val memberBehaviorStats = memberBehaviorAnalytics
+      //      .averagedPreferenceKnowledge
 
       memberStats.show(100, truncate = false)
       groupDecisionStats.show(false)
@@ -67,9 +67,9 @@ class DataAggregatorActor extends Actor with ActorLogging {
 
       log.info(groupDecisionCompositionAnalytics.decisionParadoxes.filter($"counts" === 4).count.toString)
       log.info(abileneIndex.toString)
-//    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
-//    groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
-//    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
+    //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
+    //    groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
+    //    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
 
   }
 }

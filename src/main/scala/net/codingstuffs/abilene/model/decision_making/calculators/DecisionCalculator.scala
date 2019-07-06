@@ -1,8 +1,9 @@
 package net.codingstuffs.abilene.model.decision_making.calculators
 
 import net.codingstuffs.abilene.model.decision_making.calculators.fuzzy.AgentFuzzifier
+import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
 import net.codingstuffs.abilene.model.decision_making.models.DecisionMakingModel
-import net.codingstuffs.abilene.model.decision_making.models.simplified.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.model.decision_making.models.maslowian.Models.KNSUpdated
 import net.codingstuffs.abilene.model.decision_making.models.simplified.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
 import net.codingstuffs.abilene.model.decision_making.models.simplified.Models.{FuzzyCentroid, SimpleDecisionVsCompromise, WeightedDecisionVsCompromise}
 
