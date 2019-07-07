@@ -20,11 +20,11 @@ class GroupDecisionComposition(df: DataFrame) {
   import org.apache.spark.sql.functions._
 
   def preferencePerMember: DataFrame = df
-    .select("groupId", "selfPreference", "decision")
+    .select("groupId", "memberName", "selfPreference", "decision")
     .withColumn("inclination", $"selfPreference" > 0.5)
     .withColumn("paradox", $"decision" =!= $"inclination")
 
   def decisionParadoxes: DataFrame = preferencePerMember
-    .groupBy("groupId")
+    .groupBy("memberName")
     .agg(sum($"paradox".cast(IntegerType)).alias("counts"))
 }

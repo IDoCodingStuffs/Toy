@@ -5,12 +5,19 @@ import net.codingstuffs.abilene.model.Group.DataPoint
 import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.model.decision_making.generators.GroupParamGenerator
 import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.models.{AgentBehaviorModel, AgentParamGenerator, DecisionMakingModel}
+import net.codingstuffs.abilene.model.decision_making.models.{
+  AgentBehaviorModel,
+  AgentParamGenerator, DecisionMakingModel, MaslowianAgent, StochasticAgent
+}
+import net.codingstuffs.abilene.model.decision_making.models.maslowian.MaslowianParamGenerator
 
 import scala.util.Random
 
 object Member {
-  def props(group: ActorRef, behaviorModel: AgentBehaviorModel, decisionModel: DecisionMakingModel, randomGenerator: (Random, Random)): Props =
+  def props(group: ActorRef,
+    behaviorModel: AgentBehaviorModel,
+    decisionModel: DecisionMakingModel,
+    randomGenerator: (Random, Random)): Props =
     Props(new Member(group, behaviorModel, decisionModel, randomGenerator))
 
   final case class ReceiveDecision(member: String, decision: Boolean)
@@ -19,20 +26,37 @@ object Member {
 
 }
 
-class Member(group: ActorRef, behaviorModel: AgentBehaviorModel, decisionModel: DecisionMakingModel, randomGenerators: (Random, Random))
+class Member(group: ActorRef,
+  behaviorModel   : AgentBehaviorModel,
+  decisionModel   : DecisionMakingModel,
+  randomGenerators: (Random, Random))
   extends Actor with ActorLogging {
 
   import Member._
 
   private val name = self.path.name.split("@@@")(1)
-  //!TODO: Make this specifiable
-  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(behaviorModel, randomGenerators)
+  private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(behaviorModel,
+    randomGenerators)
 
   agentParamGenerator.self = name
-  //!TODO: Generalize this
   agentParamGenerator.memberNames = GroupParamGenerator.AbileneMembers
 
-  implicit var params: DecisionParams = agentParamGenerator.get
+  val initialParams = agentParamGenerator.get
+
+  implicit var params: DecisionParams = behaviorModel match {
+
+    case StochasticAgent => initialParams
+
+    case MaslowianAgent => {
+      val maslowianParams = MaslowianParamGenerator.instance
+      DecisionParams(
+        (initialParams.selfParams._1,
+          initialParams.selfParams._2,
+          (1 / maslowianParams.getMaslowianSum(name)) * initialParams.selfParams._3),
+        initialParams.groupPreferences,
+        initialParams.groupWeights)
+    }
+  }
 
   private val knownPreferences = params.groupPreferences
 
@@ -40,7 +64,8 @@ class Member(group: ActorRef, behaviorModel: AgentBehaviorModel, decisionModel: 
 
   private def onMessage(knownPreferences: Map[String, Double]): Receive = {
     case message: ReceiveDecision =>
-      if (message.decision) context.become(onMessage(knownPreferences + (message.member -> 1))) else context.become(onMessage(knownPreferences + (message.member -> 0)))
+      if (message.decision) context.become(onMessage(knownPreferences + (message.member -> 1)))
+      else context.become(onMessage(knownPreferences + (message.member -> 0)))
     case Declare =>
       val param = DecisionParams(params.selfParams, knownPreferences, params.groupWeights)
       val calc = new DecisionCalculator(param)

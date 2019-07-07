@@ -1,6 +1,5 @@
 package net.codingstuffs.abilene.analytics
 
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 import akka.actor.{Actor, ActorLogging, Props}
@@ -8,21 +7,22 @@ import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, C
 import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.sum
-import org.apache.spark.sql.types.IntegerType
 
 object DataAggregatorActor {
   def props: Props = Props[DataAggregatorActor]
 
   case class ActorRawDataPoint(groupId: String,
-                               decisionParams: DecisionParams,
-                               decision: Boolean)
+    memberName: String,
+    decisionParams: DecisionParams,
+    decision: Boolean)
 
   case class ActorDataPoint(groupId: String,
-                            selfPreference: Double,
-                            selfWeight: Double,
-                            groupPreference: Seq[Double],
-                            groupWeights: Seq[Double],
-                            decision: Boolean)
+    memberName                     : String,
+    selfPreference                 : Double,
+    selfWeight: Double,
+    groupPreference: Seq[Double],
+    groupWeights: Seq[Double],
+    decision: Boolean)
 
   case class CreateDump()
 
@@ -62,13 +62,10 @@ class DataAggregatorActor extends Actor with ActorLogging {
 
       groupDecisionCompositionAnalytics.decisionParadoxes.show
 
-      val abileneIndex = groupDecisionCompositionAnalytics.decisionParadoxes.agg(sum("counts")).first().get(0).asInstanceOf[Long] /
-        groupDecisionCompositionAnalytics.decisionParadoxes.count.toDouble
-
-      log.info(groupDecisionCompositionAnalytics.decisionParadoxes.filter($"counts" === 4).count.toString)
-      log.info(abileneIndex.toString)
-    //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
-    //    groupDecisionStats.coalesce(1).write.json(s"./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
+    //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
+    //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
+    //    groupDecisionStats.coalesce(1).write.json(s"
+    //    ./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
     //    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
 
   }
