@@ -1,7 +1,7 @@
 package net.codingstuffs.abilene.simulation
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import net.codingstuffs.abilene.intake.mock.SocialBehavior
+import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.Group.DataPoint
 import net.codingstuffs.abilene.simulation.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.simulation.decision_making.generators.GroupParamGenerator
@@ -43,14 +43,15 @@ class Member(group: ActorRef,
   agentParamGenerator.self = name
   agentParamGenerator.memberNames = GroupParamGenerator.AbileneMembers
 
-  val initialParams = agentParamGenerator.get
+  val initialParams: DecisionParams = agentParamGenerator.get
 
   implicit var params: DecisionParams = behaviorModel match {
 
     case SimpleAgent => initialParams
 
     case MaslowianAgent =>
-      val maslowianParams = new MaslowianParamGenerator(SocialBehavior.index_means_sd.map(
+      //!TODO : Move this to member param generation
+      val maslowianParams = new MaslowianParamGenerator(MASLOWIAN_MEAN_SD.map(
         mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
       ).toList)
 
