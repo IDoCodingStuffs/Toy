@@ -1,15 +1,15 @@
-package net.codingstuffs.abilene.model
+package net.codingstuffs.abilene.simulation
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import net.codingstuffs.abilene.model.Group.DataPoint
-import net.codingstuffs.abilene.model.decision_making.calculators.DecisionCalculator
-import net.codingstuffs.abilene.model.decision_making.generators.GroupParamGenerator
-import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.models.{
+import net.codingstuffs.abilene.simulation.Group.DataPoint
+import net.codingstuffs.abilene.simulation.decision_making.calculators.DecisionCalculator
+import net.codingstuffs.abilene.simulation.decision_making.generators.GroupParamGenerator
+import net.codingstuffs.abilene.simulation.decision_making.models.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.decision_making.models.{
   AgentBehaviorModel,
   AgentParamGenerator, DecisionMakingModel, MaslowianAgent, StochasticAgent
 }
-import net.codingstuffs.abilene.model.decision_making.models.maslowian.MaslowianParamGenerator
+import net.codingstuffs.abilene.simulation.decision_making.models.maslowian.MaslowianParamGenerator
 
 import scala.util.Random
 

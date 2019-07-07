@@ -1,4 +1,4 @@
-package net.codingstuffs.abilene.model.decision_making.generators.random
+package net.codingstuffs.abilene.simulation.decision_making.generators.random
 
 import scala.util.Random
 

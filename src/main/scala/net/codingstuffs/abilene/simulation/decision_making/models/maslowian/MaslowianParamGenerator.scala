@@ -1,6 +1,6 @@
-package net.codingstuffs.abilene.model.decision_making.models.maslowian
+package net.codingstuffs.abilene.simulation.decision_making.models.maslowian
 
-import net.codingstuffs.abilene.model.decision_making.generators.random.Uniform
+import net.codingstuffs.abilene.simulation.decision_making.generators.random.Uniform
 
 import scala.util.Random
 
@@ -31,9 +31,9 @@ class MaslowianParamGenerator(listAttr: List[Double]) {
     "physio" -> listAttr.head,
     "safety" -> listAttr(1),
     "affiliation" -> listAttr(2),
-    "ambition" -> listAttr(3),
-    "pos_retention" -> listAttr(4),
-    "progeny" -> listAttr(5)
+    "mate_acquisition" -> listAttr(3),
+    "mate_retention" -> listAttr(4),
+    "parenting" -> listAttr(5)
   )
 
   def getMaslowianSum(name: String): Double = getParams(name).values.sum

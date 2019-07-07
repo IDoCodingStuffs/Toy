@@ -1,13 +1,13 @@
-package net.codingstuffs.abilene.model
+package net.codingstuffs.abilene.simulation
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
 
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
-import net.codingstuffs.abilene.model.Abilene.{husband, mother, system, wife}
-import net.codingstuffs.abilene.model.Member.{Declare, ReceiveDecision}
-import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.Abilene.{husband, mother, system, wife}
+import net.codingstuffs.abilene.simulation.Member.{Declare, ReceiveDecision}
+import net.codingstuffs.abilene.simulation.decision_making.models.AgentParamGenerator.DecisionParams
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 

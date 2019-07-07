@@ -1,7 +1,7 @@
-package net.codingstuffs.abilene.model.decision_making.models
+package net.codingstuffs.abilene.simulation.decision_making.models
 
 
-import net.codingstuffs.abilene.model.decision_making.models.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.decision_making.models.AgentParamGenerator.DecisionParams
 
 import scala.util.Random
 
