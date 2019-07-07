@@ -1,13 +1,15 @@
 package net.codingstuffs.abilene.simulation
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import net.codingstuffs.abilene.intake.mock.SocialBehavior
 import net.codingstuffs.abilene.simulation.Group.DataPoint
 import net.codingstuffs.abilene.simulation.decision_making.calculators.DecisionCalculator
 import net.codingstuffs.abilene.simulation.decision_making.generators.GroupParamGenerator
+import net.codingstuffs.abilene.simulation.decision_making.generators.random.FoldedGaussian
 import net.codingstuffs.abilene.simulation.decision_making.models.AgentParamGenerator.DecisionParams
 import net.codingstuffs.abilene.simulation.decision_making.models.{
   AgentBehaviorModel,
-  AgentParamGenerator, DecisionMakingModel, MaslowianAgent, StochasticAgent
+  AgentParamGenerator, DecisionMakingModel, MaslowianAgent, SimpleAgent
 }
 import net.codingstuffs.abilene.simulation.decision_making.models.maslowian.MaslowianParamGenerator
 
@@ -27,8 +29,8 @@ object Member {
 }
 
 class Member(group: ActorRef,
-  behaviorModel   : AgentBehaviorModel,
-  decisionModel   : DecisionMakingModel,
+  behaviorModel: AgentBehaviorModel,
+  decisionModel: DecisionMakingModel,
   randomGenerators: (Random, Random))
   extends Actor with ActorLogging {
 
@@ -45,18 +47,22 @@ class Member(group: ActorRef,
 
   implicit var params: DecisionParams = behaviorModel match {
 
-    case StochasticAgent => initialParams
+    case SimpleAgent => initialParams
 
-    case MaslowianAgent => {
-      val maslowianParams = MaslowianParamGenerator.instance
+    case MaslowianAgent =>
+      val maslowianParams = new MaslowianParamGenerator(SocialBehavior.index_means_sd.map(
+        mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
+      ).toList)
+
       DecisionParams(
         (initialParams.selfParams._1,
+        //Homeostatic entropy calculated as inverse of a Maslowian sum
           initialParams.selfParams._2,
           (1 / maslowianParams.getMaslowianSum(name)) * initialParams.selfParams._3),
-        initialParams.groupPreferences,
-        initialParams.groupWeights)
-    }
+
+        initialParams.groupPreferences, initialParams.groupWeights)
   }
+
 
   private val knownPreferences = params.groupPreferences
 

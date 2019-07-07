@@ -6,4 +6,4 @@ abstract class DecisionMakingModel
 abstract class AgentBehaviorModel
 
 case object MaslowianAgent extends AgentBehaviorModel
-case object StochasticAgent extends AgentBehaviorModel
+case object SimpleAgent extends AgentBehaviorModel
