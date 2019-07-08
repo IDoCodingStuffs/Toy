@@ -13,8 +13,7 @@ object MaslowianParamGenerator {
     random.nextDouble(),
     random.nextDouble(),
     random.nextDouble(),
-  )
-  )
+  ))
 }
 
 class MaslowianParamGenerator(listAttr: List[Double]) {

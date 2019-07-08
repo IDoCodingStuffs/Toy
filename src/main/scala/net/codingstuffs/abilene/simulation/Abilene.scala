@@ -17,7 +17,6 @@ object Abilene extends App {
   import Member._
 
   val config = ConfigFactory.load()
-
   System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
 
   val extraIterations: Int = config.getInt("group.count")
@@ -45,20 +44,21 @@ object Abilene extends App {
       val group = system.actorOf(Group.props(1.to(groupSize).toList, dataAggregator),
         s"$groupId")
       val groupMembers = 1.to(groupSize).toSet
-      groupMembers.foreach(index =>
+      groupMembers.foreach(index => {
         memberAgents = memberAgents :+ system.actorOf(
           Member.props(
             group, studyModel, DECISION_MODEL, groupMembers,
             (PREFERENCE_GENERATOR, WEIGHTS_GENERATOR)
           ),
           s"$groupId@@@$index")
+      }
       )
 
-      memberAgents.head ? Declare
+      memberAgents.head ! Declare
     })
   }
   finally {
-    Thread.sleep(120000)
+    Thread.sleep(2000)
     dataAggregator ! CreateDump
   }
 }

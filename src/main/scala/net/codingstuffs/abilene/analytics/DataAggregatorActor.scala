@@ -53,18 +53,8 @@ class DataAggregatorActor extends Actor with ActorLogging {
       val groupDecisionCompositionAnalytics = new GroupDecisionComposition(memberStats)
       val memberBehaviorAnalytics = new MemberBehavior(memberStats)
 
-      val jobRunAtDateTime = Calendar.getInstance.getTimeInMillis
-
-      groupDecisionStats.groupBy("decision").count().show()
-
-      val groupDecisionDetail = groupDecisionCompositionAnalytics
-        .getYesVoteCounts
-        .orderBy("acceptance")
-
-      groupDecisionDetail.show(false)
-      groupDecisionCompositionAnalytics.preferencePerMember.show(50, truncate = false)
-
-      groupDecisionCompositionAnalytics.decisionParadoxes.show
+      groupDecisionStats.groupBy("decision").count.show
+    //  groupDecisionCompositionAnalytics.decisionParadoxes.show
 
     //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
     //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")

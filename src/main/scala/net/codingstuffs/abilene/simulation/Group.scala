@@ -1,8 +1,8 @@
 package net.codingstuffs.abilene.simulation
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Kill, PoisonPill, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, CreateDump}
 import net.codingstuffs.abilene.simulation.Abilene.system
 import net.codingstuffs.abilene.simulation.Member.Declare
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
@@ -17,7 +17,9 @@ object Group {
     dataDumpGenerator: ActorRef): Props = Props(new Group(members, dataDumpGenerator))
 
   case class DataPoint(declare: Declare, memberParams: DecisionParams)
+
   case class GroupDataPoint(id: String, acceptance: Int, decision: Boolean)
+
 }
 
 class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with ActorLogging {
@@ -45,16 +47,13 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
       dataAggregator !
         ActorRawDataPoint(groupId, memberName, params, decision)
 
-      if (memberName.toInt != members.size) {
-        system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ? Declare
-        system.actorSelection(s"/user/$groupId@@@$memberName*") ! PoisonPill
-      }
-      else
-        dataAggregator !
-        //!TODO: Refactor out of actor
-        //Most voted decision wins system
-        GroupDataPoint(groupId,
-          memberDecisions.values.map(decision => if (decision) 1 else 0).sum,
-          memberDecisions.values.groupBy(identity).maxBy(_._2.size)._1)
+        system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
+
+      if (memberName.toInt == members.size) dataAggregator !
+          //!TODO: Refactor out of actor
+          //Most voted decision wins system
+          GroupDataPoint(groupId,
+            memberDecisions.values.map(decision => if (decision) 1 else 0).sum,
+            memberDecisions.values.groupBy(identity).maxBy(_._2.size)._1)
   }
 }
