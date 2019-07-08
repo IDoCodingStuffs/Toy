@@ -56,10 +56,11 @@ class DataAggregatorActor extends Actor with ActorLogging {
       val memberBehaviorAnalytics = new MemberBehavior(memberStats)
 
       groupDecisionCompositionAnalytics.processedDf.show
-      groupDecisionStats.groupBy("decision").count.show
 
-    //  groupDecisionCompositionAnalytics.decisionParadoxes.show
+      //Splits filtered. Later will add behavior as per Hegselmann & Krause
+      groupDecisionStats.filter($"acceptance" =!= 0.5).groupBy("decision").count.show
 
+      groupDecisionCompositionAnalytics.memberDecisionBreakdown.show
     //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
     //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
     //    groupDecisionStats.coalesce(1).write.json(s"

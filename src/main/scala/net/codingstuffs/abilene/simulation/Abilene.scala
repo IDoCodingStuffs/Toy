@@ -1,11 +1,9 @@
 package net.codingstuffs.abilene.simulation
 
-import akka.actor.{ActorRef, ActorSystem, _}
-import akka.pattern.ask
+import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.DataAggregatorActor
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
 
@@ -20,7 +18,7 @@ object Abilene extends App {
   System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
 
   val extraIterations: Int = config.getInt("group.count")
-//  val groupMax = config.getInt("group.size.max")
+  val groupMax = config.getInt("group.size.max")
   val groupMin = config.getInt("group.size.min")
 
   val studyModel = config.getString("agent.behavior.model") match {
@@ -29,14 +27,15 @@ object Abilene extends App {
   }
 
   val system: ActorSystem = ActorSystem("Abilene")
+  //!TODO: More aggregators to keep up with load from 10+ member groups
   val dataAggregator = system.actorOf(DataAggregatorActor.props, "DataAggregator")
 
   val random = new Random
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
-  1.to(extraIterations).foreach(_ => {
+  def initGroup(): Unit = {
     val groupId = math.abs(random.nextLong)
-    val groupSize = groupMin // + random.nextInt(groupMax - groupMin)
+    val groupSize = groupMin + random.nextInt(groupMax - groupMin)
 
     var memberAgents: List[ActorRef] = List()
 
@@ -52,7 +51,9 @@ object Abilene extends App {
         s"$groupId@@@$index")
     }
     )
+    //Ask first agent to declare
+    system.actorSelection(s"/user/$groupId@@@1*") ! Declare
+  }
 
-    //Ask first agent in order to declare
-    system.actorSelection(s"/user/$groupId@@@1*") ! Declare  })
+  1.to(extraIterations).foreach(_ => initGroup())
 }

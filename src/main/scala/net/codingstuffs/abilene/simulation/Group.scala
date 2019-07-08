@@ -2,7 +2,8 @@ package net.codingstuffs.abilene.simulation
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, CreateDump}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
+  CreateDump}
 import net.codingstuffs.abilene.simulation.Abilene.system
 import net.codingstuffs.abilene.simulation.Member.Declare
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
@@ -18,7 +19,7 @@ object Group {
 
   case class DataPoint(declare: Declare, memberParams: DecisionParams)
 
-  case class GroupDataPoint(id: String, acceptance: Int, decision: Boolean)
+  case class GroupDataPoint(id: String, acceptance: Double, decision: Boolean)
 
 }
 
@@ -48,13 +49,15 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
       dataAggregator !
         ActorRawDataPoint(groupId, memberName, params, decision)
 
-        system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
+      system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
 
-      if (memberName.toInt == members.size) dataAggregator !
-          //!TODO: Refactor out of actor
-          //Most voted decision wins system
-          GroupDataPoint(groupId,
-            memberDecisions.values.map(decision => if (decision) 1 else 0).sum,
-            memberDecisions.values.groupBy(identity).maxBy(_._2.size)._1)
+      if (memberName.toInt == members.size) {
+        //!TODO: Refactor out of actor
+        val groupAvg = memberDecisions.values.map(decision => if (decision) 1.0 else 0.0).sum /
+          memberDecisions.size
+
+        //Most voted takes all, splits discarded by aggregator
+        dataAggregator ! GroupDataPoint(groupId, groupAvg, groupAvg > 0.5)
+      }
   }
 }
