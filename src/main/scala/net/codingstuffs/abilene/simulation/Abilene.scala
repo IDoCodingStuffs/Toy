@@ -20,7 +20,7 @@ object Abilene extends App {
   System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
 
   val extraIterations: Int = config.getInt("group.count")
-  val groupMax = config.getInt("group.size.max")
+  //val groupMax = config.getInt("group.size.max")
   val groupMin = config.getInt("group.size.min")
 
   val studyModel = config.getString("agent.behavior.model") match {
@@ -34,31 +34,25 @@ object Abilene extends App {
   val random = new Random
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
-  try {
-    1.to(extraIterations).foreach(_ => {
-      val groupId = math.abs(random.nextLong)
-      val groupSize = groupMin + random.nextInt(groupMax - groupMin)
+  1.to(extraIterations).foreach(_ => {
+    val groupId = math.abs(random.nextLong)
+    val groupSize = groupMin //+ random.nextInt(groupMax - groupMin)
 
-      var memberAgents: List[ActorRef] = List()
+    var memberAgents: List[ActorRef] = List()
 
-      val group = system.actorOf(Group.props(1.to(groupSize).toList, dataAggregator),
-        s"$groupId")
-      val groupMembers = 1.to(groupSize).toSet
-      groupMembers.foreach(index => {
-        memberAgents = memberAgents :+ system.actorOf(
-          Member.props(
-            group, studyModel, DECISION_MODEL, groupMembers,
-            (PREFERENCE_GENERATOR, WEIGHTS_GENERATOR)
-          ),
-          s"$groupId@@@$index")
-      }
-      )
+    val group = system.actorOf(Group.props(1.to(groupSize).toList, dataAggregator),
+      s"$groupId")
+    val groupMembers = 1.to(groupSize).toSet
+    groupMembers.foreach(index => {
+      memberAgents = memberAgents :+ system.actorOf(
+        Member.props(
+          group, studyModel, DECISION_MODEL, groupMembers,
+          (PREFERENCE_GENERATOR, WEIGHTS_GENERATOR)
+        ),
+        s"$groupId@@@$index")
+    }
+    )
 
-      memberAgents.head ! Declare
-    })
-  }
-  finally {
-    Thread.sleep(2000)
-    dataAggregator ! CreateDump
-  }
+    memberAgents.head ! Declare
+  })
 }

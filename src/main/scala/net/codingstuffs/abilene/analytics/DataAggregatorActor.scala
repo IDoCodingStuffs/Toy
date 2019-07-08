@@ -5,6 +5,7 @@ import java.util.Calendar
 import akka.actor.{Actor, ActorLogging, Props}
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, CreateDump}
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.Abilene
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.sum
@@ -44,6 +45,7 @@ class DataAggregatorActor extends Actor with ActorLogging {
       actorDataPoints = actorDataPoints :+ dataPoint
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
+      if (groupDataPoints.size == Abilene.extraIterations) self ! CreateDump
 
     case CreateDump =>
       import sparkSession.implicits._
