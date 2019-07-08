@@ -8,10 +8,12 @@ class GroupDecisionComposition(df: DataFrame) {
   case class ConsensusVariance(consensus: Long, opposition: Long, conflict: Long)
   case class YesVotesCounts(zero: Long, one: Long, two: Long, three: Long, four: Long)
 
+  import org.apache.spark.sql.functions._
+
   val processedDf: DataFrame = df
     .withColumn("decision", col("decision").cast(IntegerType))
-    .groupBy("groupId")
-    .agg(sum("decision").alias("acceptance"))
+    .groupBy( "memberName")
+    .agg(mean("decision").alias("acceptance"))
 
 
   def getYesVoteCounts: DataFrame = processedDf.groupBy("acceptance").count

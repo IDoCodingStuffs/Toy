@@ -20,7 +20,7 @@ object Abilene extends App {
   System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
 
   val extraIterations: Int = config.getInt("group.count")
-  //val groupMax = config.getInt("group.size.max")
+//  val groupMax = config.getInt("group.size.max")
   val groupMin = config.getInt("group.size.min")
 
   val studyModel = config.getString("agent.behavior.model") match {
@@ -36,7 +36,7 @@ object Abilene extends App {
 
   1.to(extraIterations).foreach(_ => {
     val groupId = math.abs(random.nextLong)
-    val groupSize = groupMin //+ random.nextInt(groupMax - groupMin)
+    val groupSize = groupMin // + random.nextInt(groupMax - groupMin)
 
     var memberAgents: List[ActorRef] = List()
 
@@ -53,6 +53,6 @@ object Abilene extends App {
     }
     )
 
-    memberAgents.head ! Declare
-  })
+    //Ask first agent in order to declare
+    system.actorSelection(s"/user/$groupId@@@1*") ! Declare  })
 }

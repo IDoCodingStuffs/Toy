@@ -55,7 +55,9 @@ class DataAggregatorActor extends Actor with ActorLogging {
       val groupDecisionCompositionAnalytics = new GroupDecisionComposition(memberStats)
       val memberBehaviorAnalytics = new MemberBehavior(memberStats)
 
+      groupDecisionCompositionAnalytics.processedDf.show
       groupDecisionStats.groupBy("decision").count.show
+
     //  groupDecisionCompositionAnalytics.decisionParadoxes.show
 
     //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"

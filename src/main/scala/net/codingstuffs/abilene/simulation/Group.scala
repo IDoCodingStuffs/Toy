@@ -38,6 +38,7 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: DecisionParams) =>
+
       val memberName = sender().path.name.split("@@@")(1)
       memberDecisions += (memberName.toInt -> decision)
 
