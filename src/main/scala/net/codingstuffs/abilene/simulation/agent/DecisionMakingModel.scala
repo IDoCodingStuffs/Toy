@@ -1,4 +1,4 @@
-package net.codingstuffs.abilene.simulation.decision_making.models
+package net.codingstuffs.abilene.simulation.agent
 
 
 abstract class DecisionMakingModel

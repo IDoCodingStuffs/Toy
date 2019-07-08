@@ -1,6 +1,6 @@
-package net.codingstuffs.abilene.simulation.decision_making.models.maslowian
+package net.codingstuffs.abilene.simulation.agent.maslowian
 
-import net.codingstuffs.abilene.simulation.decision_making.generators.random.Uniform
+import net.codingstuffs.abilene.simulation.generators.random.Uniform
 
 import scala.util.Random
 

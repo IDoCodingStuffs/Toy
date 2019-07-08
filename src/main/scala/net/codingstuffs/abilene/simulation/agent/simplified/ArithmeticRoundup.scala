@@ -1,6 +1,6 @@
-package net.codingstuffs.abilene.simulation.decision_making.models.simplified
+package net.codingstuffs.abilene.simulation.agent.simplified
 
-import net.codingstuffs.abilene.simulation.decision_making.models.DecisionMakingModel
+import net.codingstuffs.abilene.simulation.agent.DecisionMakingModel
 
 object ArithmeticRoundup {
   final case object SelfishRoundup extends DecisionMakingModel

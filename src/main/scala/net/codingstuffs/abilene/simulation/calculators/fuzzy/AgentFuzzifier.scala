@@ -1,7 +1,7 @@
-package net.codingstuffs.abilene.simulation.decision_making.calculators.fuzzy
+package net.codingstuffs.abilene.simulation.calculators.fuzzy
 
-import net.codingstuffs.abilene.simulation.decision_making.models.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.simulation.decision_making.models.simplified.Models.{SimpleDecisionVsCompromise, WeightedDecisionVsCompromise}
+import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.agent.simplified.Models.{SimpleDecisionVsCompromise, WeightedDecisionVsCompromise}
 
 object AgentFuzzifier {
 

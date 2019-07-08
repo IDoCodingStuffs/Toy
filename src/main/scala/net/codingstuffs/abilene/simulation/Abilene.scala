@@ -1,64 +1,64 @@
 package net.codingstuffs.abilene.simulation
 
-import akka.actor.{ActorRef, ActorSystem}
-import net.codingstuffs.abilene.analytics.DataAggregatorActor
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
-
-import scala.util.Random
-import akka.actor._
+import akka.actor.{ActorRef, ActorSystem, _}
 import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.simulation.decision_making.generators.random.{Beta, Discrete, FoldedGaussian, Uniform}
-import net.codingstuffs.abilene.simulation.decision_making.models.{DecisionMakingModel, MaslowianAgent, SimpleAgent}
-import net.codingstuffs.abilene.simulation.decision_making.models.simplified.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.CreateDump
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
+import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
 
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Random
 
 object Abilene extends App {
 
   import Member._
 
   val config = ConfigFactory.load()
-  val extraIterations: Int = config.getInt("numberGroupsSimulated")
-  System.setProperty("hadoop.home.dir", "C:\\hadoop-2.8.0")
 
+  System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
 
-  val studyModel = MaslowianAgent
+  val extraIterations: Int = config.getInt("group.count")
+  val groupMax = config.getInt("group.size.max")
+  val groupMin = config.getInt("group.size.min")
 
-  val system: ActorSystem = ActorSystem("Abilene0")
-  val dataDumpGenerator = system.actorOf(DataAggregatorActor.props, "dataDumper")
-  var group, father, mother, wife, husband: ActorRef = _
-  val groupMembers = Set("father", "mother", "wife", "husband")
+  val studyModel = config.getString("agent.behavior.model") match {
+    case "Simplified" => SimpleAgent
+    case "Maslowian" => MaslowianAgent
+  }
+
+  val system: ActorSystem = ActorSystem("Abilene")
+  val dataAggregator = system.actorOf(DataAggregatorActor.props, "DataAggregator")
 
   val random = new Random
+  implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
   try {
     1.to(extraIterations).foreach(_ => {
-      var groupId = math.abs(random.nextLong)
-      implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
+      val groupId = math.abs(random.nextLong)
+      val groupSize = groupMin + random.nextInt(groupMax - groupMin)
 
-      group = system.actorOf(Group.props(groupMembers, dataDumpGenerator), s"$groupId---group")
+      var memberAgents: List[ActorRef] = List()
 
-      father = system.actorOf(
-        Member.props(group, studyModel, DECISION_MODELS.head, (PREFERENCE_GENERATORS.head, WEIGHTS_GENERATORS.head)),
-        s"$groupId@@@father")
-      mother = system.actorOf(
-        Member.props(group, studyModel, DECISION_MODELS(1), (PREFERENCE_GENERATORS(1), WEIGHTS_GENERATORS(1))),
-        s"$groupId@@@mother")
-      wife = system.actorOf(
-        Member.props(group, studyModel, DECISION_MODELS(2), (PREFERENCE_GENERATORS(2), WEIGHTS_GENERATORS(2))),
-        s"$groupId@@@wife")
-      husband = system.actorOf(
-        Member.props(group, studyModel, DECISION_MODELS(3), (PREFERENCE_GENERATORS(3), WEIGHTS_GENERATORS(3))),
-        s"$groupId@@@husband")
+      val group = system.actorOf(Group.props(1.to(groupSize).toList, dataAggregator),
+        s"$groupId")
+      val groupMembers = 1.to(groupSize).toSet
+      groupMembers.foreach(index =>
+        memberAgents = memberAgents :+ system.actorOf(
+          Member.props(
+            group, studyModel, DECISION_MODEL, groupMembers,
+            (PREFERENCE_GENERATOR, WEIGHTS_GENERATOR)
+          ),
+          s"$groupId@@@$index")
+      )
 
-      father ? Declare
+      memberAgents.head ? Declare
     })
   }
   finally {
     Thread.sleep(120000)
-    dataDumpGenerator ! CreateDump
+    dataAggregator ! CreateDump
   }
 }
