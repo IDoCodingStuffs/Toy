@@ -1,8 +1,9 @@
-package net.codingstuffs.abilene.model.decision_making.calculators
+package net.codingstuffs.abilene.simulation.calculators
 
-import net.codingstuffs.abilene.model.decision_making.models.Models.{DecisionMakingModel, SimpleDecisionVsCompromise, SocialImpactNSL, WeightedDecisionVsCompromise}
-import net.codingstuffs.abilene.model.decision_making.generators.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.model.decision_making.models.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
+import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.agent.DecisionMakingModel
+import net.codingstuffs.abilene.simulation.agent.simplified.ArithmeticRoundup.{EgalitarianRoundup, SelfishRoundup, WeightedRoundup}
+import net.codingstuffs.abilene.simulation.agent.simplified.Models.{SimpleDecisionVsCompromise, SocialImpactNSL, WeightedDecisionVsCompromise}
 
 object ModelParamAdjuster {
 
