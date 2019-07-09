@@ -1,21 +1,5 @@
 package net.codingstuffs.abilene.simulation.agent.maslowian
 
-import net.codingstuffs.abilene.simulation.generators.random.Uniform
-
-import scala.util.Random
-
-object MaslowianParamGenerator {
-  val random: Random = new Uniform()
-  val instance: MaslowianParamGenerator = new MaslowianParamGenerator(List(
-    random.nextDouble(),
-    random.nextDouble(),
-    random.nextDouble(),
-    random.nextDouble(),
-    random.nextDouble(),
-    random.nextDouble(),
-  ))
-}
-
 class MaslowianParamGenerator(listAttr: List[Double]) {
 
   implicit var self: String = _

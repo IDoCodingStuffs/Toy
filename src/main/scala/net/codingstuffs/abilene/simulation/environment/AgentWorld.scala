@@ -15,7 +15,8 @@ object AgentWorld {
   private final val FACTOR_TYPE = config.getString("environment.factor.type")
 
   def get: Set[String] = FACTOR_TYPE match {
-    case "Static" => 1.to(FACTOR_COUNT).map(_ => random.nextString(FACTOR_LENGTH)).toSet
+    case "Static" => 1.to(FACTOR_COUNT).map(_ =>
+      random.alphanumeric.take(FACTOR_LENGTH).mkString("")).toSet
   }
 }
 
