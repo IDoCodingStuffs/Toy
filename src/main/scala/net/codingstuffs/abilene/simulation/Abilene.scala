@@ -33,7 +33,7 @@ object Abilene extends App {
   val random = new Random
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
-  def initGroup(): Unit = {
+  def initGroup: Unit = {
     val groupId = math.abs(random.nextLong)
     val groupSize = groupMin + random.nextInt(groupMax - groupMin)
 
@@ -55,5 +55,5 @@ object Abilene extends App {
     system.actorSelection(s"/user/$groupId@@@1*") ! Declare
   }
 
-  1.to(extraIterations).foreach(_ => initGroup())
+  1.to(extraIterations).foreach(_ => initGroup)
 }

@@ -22,19 +22,19 @@ class GroupDecisionComposition(df: DataFrame) {
 
   def memberDecisionBreakdown: DataFrame = df.groupBy( "decision").count()
 
-  def preferencePerMember: DataFrame = df
-    .select("groupId", "memberName", "selfPreference", "decision")
-    .withColumn("inclination", $"selfPreference" > 0.5)
-    .withColumn("paradox", $"decision" =!= $"inclination")
-
   //Two-way vote
   def preferencePerGroup: DataFrame = df
     .withColumn("decision", col("decision").cast(IntegerType))
     .groupBy("groupId")
     .agg(mean("decision"))
 
+  def preferencePerMember: DataFrame = df
+    .select("groupId", "memberName", "selfPreference", "decision")
+    .withColumn("inclination", $"selfPreference" > 0.5)
+    .withColumn("paradox", $"decision" =!= $"inclination")
 
   def decisionParadoxes: DataFrame = preferencePerMember
-    .groupBy(" memberName")
-    .agg(sum($"paradox".cast(IntegerType)).alias("counts"))
+    .groupBy("memberName")
+    .agg(mean($"paradox".cast(IntegerType)).alias("counts"))
+    .orderBy("memberName")
 }
