@@ -18,7 +18,7 @@ object DataAggregatorActor {
     groupId: String,
     memberName                        : String,
     decisionParams                    : DecisionParams,
-    decision                          : Boolean
+    memberDecision                          : Boolean
   )
 
   case class ActorDataPoint(
@@ -49,7 +49,7 @@ class DataAggregatorActor(analytics: ActorRef, assigned: Int) extends Actor with
       actorRawDataPoints = actorRawDataPoints :+ dataPoint
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
-      if (groupDataPoints.size == assigned)
-        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)
+      if (groupDataPoints.size == assigned) {
+        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)}
   }
 }

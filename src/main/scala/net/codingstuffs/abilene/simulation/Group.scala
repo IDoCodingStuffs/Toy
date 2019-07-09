@@ -2,10 +2,7 @@ package net.codingstuffs.abilene.simulation
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
-  ActorDataPoint, ActorRawDataPoint,
-
-}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
 import net.codingstuffs.abilene.simulation.Abilene.system
 import net.codingstuffs.abilene.simulation.Member.Declare
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
@@ -24,14 +21,13 @@ object Group {
     memberParams              : DecisionParams,
     state                     : (String, Set[String], List[Double]))
 
-  case class GroupDataPoint(groupId: String, acceptance: Double, decision: Boolean)
+  case class GroupDataPoint(groupId: String, acceptance: Double, groupDecision: Boolean)
 
 }
 
 class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with ActorLogging {
 
   import Group._
-  import akka.pattern.ask
 
   // implicit ExecutionContext should be in scope
   implicit val ec: ExecutionContext = context.dispatcher
@@ -56,13 +52,15 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
 
     system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
 
-    if (memberName.toInt == members.size) {
+    if (memberDecisions.size == members.size) {
       //!TODO: Refactor out of actor
       val groupAvg = memberDecisions.values.map(decision => if (decision) 1.0 else 0.0).sum /
         memberDecisions.size
 
       //Most voted takes all, analytics engine has additional logic to handle splits
       dataAggregator ! GroupDataPoint(groupId, groupAvg, groupAvg > 0.5)
+      //!TODO: Make cleanup more graceful
+      context.stop(self)
     }
   }
 }

@@ -3,7 +3,8 @@ package net.codingstuffs.abilene.analytics
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.AnalyticsGenerationActor.Generate
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
+  DataAggregate}
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 import org.apache.spark.sql.SparkSession
 
@@ -12,6 +13,7 @@ object AnalyticsGenerationActor {
 
   case object Generate
 
+  var aggregatesReceived = 0
 }
 
 class AnalyticsGenerationActor extends Actor with ActorLogging {
@@ -23,6 +25,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
     .config("spark.executor.cores", 2)
     .master("local[*]").getOrCreate()
 
+  import AnalyticsGenerationActor._
+
   var actorDataPoints: Seq[ActorDataPoint] = Seq()
   var actorRawDataPoints: Seq[ActorRawDataPoint] = Seq()
   var groupDataPoints: Seq[GroupDataPoint] = Seq()
@@ -33,21 +37,29 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       actorRawDataPoints = actorRawDataPoints ++ receipt.actorRawDataPoints
       groupDataPoints = groupDataPoints ++ receipt.groupDataPoints
 
-      if (groupDataPoints.size == config.getInt("group.count"))
+      aggregatesReceived += 1
+
+      if (aggregatesReceived == config.getInt("data.aggregator.count"))
         self ! Generate
 
     case Generate =>
       import sparkSession.implicits._
-      val memberStats = actorDataPoints.toDF.select("*").distinct.toDF
-      val memberPreferenceStats = actorRawDataPoints.distinct.toDF
-      val groupDecisionStats = groupDataPoints.distinct.toDF
+      val memberStats = actorDataPoints.toDF
+      val memberPreferenceStats = actorRawDataPoints.toDF
+      val groupDecisionStats = groupDataPoints.toDF
 
-      println(groupDecisionStats.count)
+      val fullAggregate = memberStats.join(
+        memberPreferenceStats.join(
+          groupDecisionStats,
+          "groupId"
+        ),
+        Seq("memberName", "groupId"))
 
-      memberStats.join(
-        memberPreferenceStats,
-          Seq("memberName", "groupId"))
-        .show
+      groupDecisionStats.filter($"acceptance" =!= 0.5).groupBy("groupDecision").count.show
+      fullAggregate
+        .filter($"acceptance" =!= 0.5)
+        .filter($"memberDecision" =!= $"groupDecision")
+        .groupBy("memberDecision").count.show
 
     //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
     //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
