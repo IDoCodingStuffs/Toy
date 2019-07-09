@@ -3,22 +3,21 @@ package net.codingstuffs.abilene.simulation
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.Group.DataPoint
-import net.codingstuffs.abilene.simulation.calculators.DecisionCalculator
-import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
+import net.codingstuffs.abilene.simulation.agent._
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.simulation.agent.{
-  AgentBehaviorModel,
-  AgentParamGenerator, DecisionMakingModel, MaslowianAgent, SimpleAgent
-}
+import net.codingstuffs.abilene.simulation.agent.genetics.AgentGeneticsGenerator
 import net.codingstuffs.abilene.simulation.agent.maslowian.MaslowianParamGenerator
+import net.codingstuffs.abilene.simulation.calculators.DecisionCalculator
+import net.codingstuffs.abilene.simulation.environment.AgentWorld
+import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
 
 import scala.util.Random
 
 object Member {
-  def props(group: ActorRef,
-    behaviorModel  : AgentBehaviorModel,
-    decisionModel  : DecisionMakingModel,
-    groupIndices    : Set[Int],
+  def props(group  : ActorRef,
+    behaviorModel: AgentBehaviorModel,
+    decisionModel: DecisionMakingModel,
+    groupIndices   : Set[Int],
     randomGenerator: (Random, Random)): Props =
     Props(new Member(group, behaviorModel, decisionModel, groupIndices, randomGenerator))
 
@@ -29,43 +28,58 @@ object Member {
 }
 
 class Member(group: ActorRef,
-  behaviorModel   : AgentBehaviorModel,
-  decisionModel   : DecisionMakingModel,
-  groupIndices    : Set[Int],
+  behaviorModel: AgentBehaviorModel,
+  decisionModel: DecisionMakingModel,
+  groupIndices: Set[Int],
   randomGenerators: (Random, Random))
   extends Actor with ActorLogging {
 
   import Member._
 
   private val name = self.path.name.split("@@@")(1)
+  private val agentGenes = AgentGeneticsGenerator.get
+  private val GENETICS = AgentGeneticsGenerator.GENE_SET(agentGenes)
+  private val agentWorld = AgentWorld.get
   private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(behaviorModel,
     randomGenerators, groupIndices)
-
   agentParamGenerator.self = name
 
-  val initialParams: DecisionParams = agentParamGenerator.get
+  private val initialParams: DecisionParams = agentParamGenerator.get
+  private val knownPreferences = initialParams.groupPreferences
 
-  implicit var params: DecisionParams = behaviorModel match {
+  private val maslowianParams = MASLOWIAN_MEAN_SD.map(
+    mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
+  ).toList
 
-    case SimpleAgent => initialParams
+  private val adjustedParams: DecisionParams = {
+    val adjustedForSelf = DecisionParams(
+      (initialParams.selfParams._1, initialParams.selfParams._2,
+        //Multiply self weight by sum of epimorphism
+        if (agentWorld.contains(GENETICS._1))
+          GENETICS._2 * initialParams.selfParams._3
+        else 0),
+      initialParams.groupPreferences,
+      initialParams.groupWeights
+    )
+    val adjustedForGroup = behaviorModel match {
 
-    case MaslowianAgent =>
-      //!TODO : Move this to member param generation
-      val maslowianParams = new MaslowianParamGenerator(MASLOWIAN_MEAN_SD.map(
-        mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
-      ).toList)
+      case SimpleAgent => adjustedForSelf
 
-      DecisionParams(
-        (initialParams.selfParams._1,
-          //Homeostatic entropy calculated as inverse of a Maslowian sum
-          initialParams.selfParams._2,
-          (1 / maslowianParams.getMaslowianSum(name)) * initialParams.selfParams._3),
+      case MaslowianAgent =>
+        //!TODO : Move this to member param generation
+        val maslowianGenerator = new MaslowianParamGenerator(maslowianParams)
 
-        initialParams.groupPreferences, initialParams.groupWeights)
+        DecisionParams(
+          (adjustedForSelf.selfParams._1,
+            //Homeostatic entropy calculated as inverse of a Maslowian sum
+            adjustedForSelf.selfParams._2,
+            (1 / maslowianGenerator.getMaslowianSum(name)) * adjustedForSelf.selfParams._3),
+
+          adjustedForSelf.groupPreferences, adjustedForSelf.groupWeights)
+    }
+
+    adjustedForGroup
   }
-
-
-  private val knownPreferences = params.groupPreferences
 
   override def receive: Receive = onMessage(knownPreferences)
 
@@ -74,8 +88,10 @@ class Member(group: ActorRef,
       if (message.decision) context.become(onMessage(knownPreferences + (message.member -> 1)))
       else context.become(onMessage(knownPreferences + (message.member -> 0)))
     case Declare =>
-      val param = DecisionParams(params.selfParams, knownPreferences, params.groupWeights)
+      val param = DecisionParams(adjustedParams.selfParams, knownPreferences, adjustedParams
+        .groupWeights)
+      val state = (agentGenes, agentWorld, maslowianParams)
       val calc = new DecisionCalculator(param)
-      group ! DataPoint(Declare(calc.get(decisionModel)), param)
+      group ! DataPoint(Declare(calc.get(decisionModel)), param, state)
   }
 }
