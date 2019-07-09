@@ -44,6 +44,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
     case Generate =>
       import sparkSession.implicits._
+      import org.apache.spark.sql.functions._
+
       val memberStats = actorDataPoints.toDF
       val memberPreferenceStats = actorRawDataPoints.toDF
       val groupDecisionStats = groupDataPoints.toDF
@@ -55,11 +57,22 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         ),
         Seq("memberName", "groupId"))
 
-      groupDecisionStats.filter($"acceptance" =!= 0.5).groupBy("groupDecision").count.show
-      fullAggregate
+      println("group decisions with no splits")
+      println(groupDecisionStats
+        .filter($"acceptance" =!= 0.5)
+        .count)
+
+      println("group decisions with conflict")
+      //!TODO: Distribution of relative magnitude of conflict -- 1 out of 30 or 14 out of 30
+      println(fullAggregate
         .filter($"acceptance" =!= 0.5)
         .filter($"memberDecision" =!= $"groupDecision")
-        .groupBy("memberDecision").count.show
+        .select("groupId").distinct.count)
+
+      println("group decisions with split")
+      println(groupDecisionStats
+        .filter($"acceptance" === 0.5)
+        .count)
 
     //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
     //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
