@@ -19,7 +19,7 @@ object AgentGeneticsGenerator {
 
 
   val GENE_SET: Map[String, (String, Double)] = 1.to(GENE_COUNT)
-    .map(_ => random.nextString(GENOME_LENGTH) ->
+    .map(_ => random.alphanumeric.take(GENOME_LENGTH).mkString("") ->
       (random.alphanumeric.take(AgentWorld.FACTOR_LENGTH).mkString(""),
         random.nextGaussian() * GENE_BOOST_SD + GENE_BOOST_MEAN)).toMap
 
