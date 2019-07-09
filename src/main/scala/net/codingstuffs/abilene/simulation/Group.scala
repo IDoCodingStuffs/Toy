@@ -24,7 +24,7 @@ object Group {
     memberParams              : DecisionParams,
     state                     : (String, Set[String], List[Double]))
 
-  case class GroupDataPoint(id: String, acceptance: Double, decision: Boolean)
+  case class GroupDataPoint(groupId: String, acceptance: Double, decision: Boolean)
 
 }
 
@@ -61,7 +61,7 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
       val groupAvg = memberDecisions.values.map(decision => if (decision) 1.0 else 0.0).sum /
         memberDecisions.size
 
-      //Most voted takes all, splits discarded by aggregator
+      //Most voted takes all, analytics engine has additional logic to handle splits
       dataAggregator ! GroupDataPoint(groupId, groupAvg, groupAvg > 0.5)
     }
   }

@@ -38,13 +38,17 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
     case Generate =>
       import sparkSession.implicits._
-      val memberStats = actorDataPoints.toDF
-      val memberPreferenceStats = actorRawDataPoints.toDF
-      val groupDecisionStats = groupDataPoints.toDF
+      val memberStats = actorDataPoints.toDF.select("*").distinct.toDF
+      val memberPreferenceStats = actorRawDataPoints.distinct.toDF
+      val groupDecisionStats = groupDataPoints.distinct.toDF
 
-      memberStats.describe().show
-      memberPreferenceStats.describe().show
-      groupDecisionStats.describe().show
+      println(groupDecisionStats.count)
+
+      memberStats.join(
+        memberPreferenceStats,
+          Seq("memberName", "groupId"))
+        .show
+
     //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
     //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
     //    groupDecisionStats.coalesce(1).write.json(s"

@@ -55,8 +55,12 @@ class Member(group: ActorRef,
     val adjustedForSelf = DecisionParams(
       (initialParams.selfParams._1, initialParams.selfParams._2,
         //Multiply self weight by sum of epimorphism
-        if (agentWorld.contains(GENETICS._1))
-          GENETICS._2 * initialParams.selfParams._3
+        //!TODO: Refactor into its own method in a util
+        //!TODO: Refine the genetic algorithm with mutations etc.
+        //!TODO: Introduce a scoring system or something instead of constant fitness on first match
+        if (agentGenes.map(
+          c => agentWorld.contains(c.toString)).foldLeft(false)(_ || _))
+          GENETICS * initialParams.selfParams._3
         else 0),
       initialParams.groupPreferences,
       initialParams.groupWeights

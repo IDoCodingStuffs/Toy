@@ -18,10 +18,10 @@ object AgentGeneticsGenerator {
   private final val GENE_BOOST_SD = config.getDouble("agent.genome.boost.sd")
 
 
-  val GENE_SET: Map[String, (String, Double)] = 1.to(GENE_COUNT)
+  val GENE_SET: Map[String, Double] = 1.to(GENE_COUNT)
     .map(_ => random.alphanumeric.take(GENOME_LENGTH).mkString("") ->
-      (random.alphanumeric.take(AgentWorld.FACTOR_LENGTH).mkString(""),
-        random.nextGaussian() * GENE_BOOST_SD + GENE_BOOST_MEAN)).toMap
+      //(random.alphanumeric.take(AgentWorld.FACTOR_LENGTH).mkString(""),
+      (random.nextGaussian() * GENE_BOOST_SD + GENE_BOOST_MEAN)).toMap
 
   def get: String = GENE_SET.keySet.toVector(random.nextInt(GENE_SET.size))
 }
