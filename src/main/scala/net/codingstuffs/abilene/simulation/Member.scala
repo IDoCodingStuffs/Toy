@@ -14,10 +14,10 @@ import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
 import scala.util.Random
 
 object Member {
-  def props(group: ActorRef,
+  def props(group  : ActorRef,
     behaviorModel: AgentBehaviorModel,
     decisionModel: DecisionMakingModel,
-    groupIndices : Set[Int],
+    groupIndices   : Set[Int],
     randomGenerator: (Random, Random)): Props =
     Props(new Member(group, behaviorModel, decisionModel, groupIndices, randomGenerator))
 
@@ -28,9 +28,9 @@ object Member {
 }
 
 class Member(group: ActorRef,
-  behaviorModel   : AgentBehaviorModel,
-  decisionModel   : DecisionMakingModel,
-  groupIndices    : Set[Int],
+  behaviorModel: AgentBehaviorModel,
+  decisionModel: DecisionMakingModel,
+  groupIndices: Set[Int],
   randomGenerators: (Random, Random))
   extends Actor with ActorLogging {
 
@@ -38,6 +38,7 @@ class Member(group: ActorRef,
 
   private val name = self.path.name.split("@@@")(1)
   private val agentGenes = AgentGeneticsGenerator.get
+  private val GENETICS = AgentGeneticsGenerator.GENE_SET(agentGenes)
   private val agentWorld = AgentWorld.get
   private val agentParamGenerator: AgentParamGenerator = new AgentParamGenerator(behaviorModel,
     randomGenerators, groupIndices)
@@ -46,14 +47,16 @@ class Member(group: ActorRef,
   private val initialParams: DecisionParams = agentParamGenerator.get
   private val knownPreferences = initialParams.groupPreferences
 
-  private val geneticsEpimorphism = AgentGeneticsGenerator.GENE_SET(agentGenes)
+  private val maslowianParams = MASLOWIAN_MEAN_SD.map(
+    mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
+  ).toList
 
   private val adjustedParams: DecisionParams = {
     val adjustedForSelf = DecisionParams(
       (initialParams.selfParams._1, initialParams.selfParams._2,
         //Multiply self weight by sum of epimorphism
-        if(agentWorld.contains(geneticsEpimorphism._1))
-          geneticsEpimorphism._2 * initialParams.selfParams._3
+        if (agentWorld.contains(GENETICS._1))
+          GENETICS._2 * initialParams.selfParams._3
         else 0),
       initialParams.groupPreferences,
       initialParams.groupWeights
@@ -64,15 +67,13 @@ class Member(group: ActorRef,
 
       case MaslowianAgent =>
         //!TODO : Move this to member param generation
-        val maslowianParams = new MaslowianParamGenerator(MASLOWIAN_MEAN_SD.map(
-          mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
-        ).toList)
+        val maslowianGenerator = new MaslowianParamGenerator(maslowianParams)
 
         DecisionParams(
           (adjustedForSelf.selfParams._1,
             //Homeostatic entropy calculated as inverse of a Maslowian sum
             adjustedForSelf.selfParams._2,
-            (1 / maslowianParams.getMaslowianSum(name)) * adjustedForSelf.selfParams._3),
+            (1 / maslowianGenerator.getMaslowianSum(name)) * adjustedForSelf.selfParams._3),
 
           adjustedForSelf.groupPreferences, adjustedForSelf.groupWeights)
     }
@@ -89,7 +90,8 @@ class Member(group: ActorRef,
     case Declare =>
       val param = DecisionParams(adjustedParams.selfParams, knownPreferences, adjustedParams
         .groupWeights)
+      val state = (agentGenes, agentWorld, maslowianParams)
       val calc = new DecisionCalculator(param)
-      group ! DataPoint(Declare(calc.get(decisionModel)), param)
+      group ! DataPoint(Declare(calc.get(decisionModel)), param, state)
   }
 }

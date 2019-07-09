@@ -1,12 +1,9 @@
-package net.codingstuffs.abilene.analytics
+package net.codingstuffs.abilene.analytics.suites
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.IntegerType
 
 class GroupDecisionComposition(df: DataFrame) {
-  case class ConsensusVariance(consensus: Long, opposition: Long, conflict: Long)
-  case class YesVotesCounts(zero: Long, one: Long, two: Long, three: Long, four: Long)
-
   import org.apache.spark.sql.functions._
 
   val processedDf: DataFrame = df
@@ -35,6 +32,6 @@ class GroupDecisionComposition(df: DataFrame) {
 
   def decisionParadoxes: DataFrame = preferencePerMember
     .groupBy("memberName")
-    .agg(mean($"paradox".cast(IntegerType)).alias("counts"))
+    .agg(mean($"paradox".cast(IntegerType) * 100).alias("percentage"))
     .orderBy("memberName")
 }

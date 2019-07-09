@@ -3,7 +3,7 @@ package net.codingstuffs.abilene.simulation
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.analytics.DataAggregatorActor
+import net.codingstuffs.abilene.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
 
@@ -20,6 +20,7 @@ object Abilene extends App {
   val extraIterations: Int = config.getInt("group.count")
   val groupMax = config.getInt("group.size.max")
   val groupMin = config.getInt("group.size.min")
+  val aggregatorCount = config.getInt("data.aggregator.count")
 
   val studyModel = config.getString("agent.behavior.model") match {
     case "Simplified" => SimpleAgent
@@ -27,8 +28,15 @@ object Abilene extends App {
   }
 
   val system: ActorSystem = ActorSystem("Abilene")
-  //!TODO: More aggregators to keep up with load from 10+ member groups
-  val dataAggregator = system.actorOf(DataAggregatorActor.props, "DataAggregator")
+  val analytics = system.actorOf(AnalyticsGenerationActor.props, "AnalyticsGenerator")
+
+  //!TODO: Move to method
+  var dataAggregators: List[ActorRef] = List()
+  1.to(aggregatorCount).foreach(
+    index => dataAggregators = dataAggregators :+
+      system.actorOf(DataAggregatorActor.props(analytics, extraIterations / aggregatorCount),
+      s"DataAggregator$index")
+  )
 
   val random = new Random
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
@@ -39,7 +47,8 @@ object Abilene extends App {
 
     var memberAgents: List[ActorRef] = List()
 
-    val group = system.actorOf(Group.props(1.to(groupSize).toList, dataAggregator),
+    val group = system.actorOf(Group.props(1.to(groupSize).toList,
+      dataAggregators((groupId % aggregatorCount).toInt)),
       s"$groupId")
     val groupMembers = 1.to(groupSize).toSet
     groupMembers.foreach(index => {
