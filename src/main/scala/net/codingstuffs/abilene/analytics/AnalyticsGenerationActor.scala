@@ -75,11 +75,10 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       println("distribution of conflict")
       fullAggregate
         .filter($"acceptance" =!= 0.5)
-        .groupBy("groupId")
-        .agg(countDistinct($"memberDecision" =!= $"groupDecision") / count($"memberDecision") as
-          "conflict")
-        .describe("conflict")
-          .show
+        .withColumn("conflict", $"memberDecision" =!= $"groupDecision")
+        .groupBy("conflict")
+        .count()
+        .show()
 
 
       println("group decisions with split")
