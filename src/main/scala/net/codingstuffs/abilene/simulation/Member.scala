@@ -74,14 +74,11 @@ class Member(group: ActorRef,
         val maslowianGenerator = new MaslowianParamGenerator(maslowianParams)
 
         DecisionParams(
-          (adjustedForSelf.selfParams._1,
-            //Homeostatic entropy calculated as inverse of a Maslowian sum
-            adjustedForSelf.selfParams._2,
-            (1 / maslowianGenerator.getMaslowianSum(name)) * adjustedForSelf.selfParams._3),
-
-          adjustedForSelf.groupPreferences, adjustedForSelf.groupWeights)
+          (adjustedForSelf.selfParams._1, adjustedForSelf.selfParams._2, adjustedForSelf.selfParams._3),
+          adjustedForSelf.groupPreferences,
+          adjustedForSelf.groupWeights.map(weight =>
+          weight._1 -> (1 / maslowianGenerator.getMaslowianSum(name)) * weight._2))
     }
-
     adjustedForGroup
   }
 

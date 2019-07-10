@@ -43,7 +43,7 @@ object Abilene extends App {
   )
 
   def initGroup(aggregators: List[ActorRef]): Unit = {
-    val groupId = System.nanoTime()
+    val groupId = math.abs(random.nextLong())
     val groupSize = groupMin + random.nextInt(groupMax - groupMin)
 
     var memberAgents: List[ActorRef] = List()

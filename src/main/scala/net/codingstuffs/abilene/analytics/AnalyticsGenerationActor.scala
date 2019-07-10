@@ -3,8 +3,10 @@ package net.codingstuffs.abilene.analytics
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.AnalyticsGenerationActor.Generate
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
-  DataAggregate}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
+  ActorDataPoint, ActorRawDataPoint,
+  DataAggregate
+}
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 import org.apache.spark.sql.SparkSession
 
@@ -46,9 +48,9 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       import sparkSession.implicits._
       import org.apache.spark.sql.functions._
 
-      val memberStats = actorDataPoints.toDF
-      val memberPreferenceStats = actorRawDataPoints.toDF
-      val groupDecisionStats = groupDataPoints.toDF
+      val memberStats = actorDataPoints.distinct.toDF
+      val memberPreferenceStats = actorRawDataPoints.distinct.toDF
+      val groupDecisionStats = groupDataPoints.distinct.toDF
 
       val fullAggregate = memberStats.join(
         memberPreferenceStats.join(
@@ -57,17 +59,28 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         ),
         Seq("memberName", "groupId"))
 
+      fullAggregate.show(50)
+
       println("group decisions with no splits")
       println(groupDecisionStats
         .filter($"acceptance" =!= 0.5)
         .count)
 
       println("group decisions with conflict")
-      //!TODO: Distribution of relative magnitude of conflict -- 1 out of 30 or 14 out of 30
       println(fullAggregate
         .filter($"acceptance" =!= 0.5)
         .filter($"memberDecision" =!= $"groupDecision")
         .select("groupId").distinct.count)
+
+      println("distribution of conflict")
+      fullAggregate
+        .filter($"acceptance" =!= 0.5)
+        .groupBy("groupId")
+        .agg(countDistinct($"memberDecision" =!= $"groupDecision") / count($"memberDecision") as
+          "conflict")
+        .describe("conflict")
+          .show
+
 
       println("group decisions with split")
       println(groupDecisionStats

@@ -19,5 +19,8 @@ class MaslowianParamGenerator(listAttr: List[Double]) {
     "parenting" -> listAttr(5)
   )
 
-  def getMaslowianSum(name: String): Double = getParams(name).values.sum
+  def getMaslowianSum(name: String): Double = {
+    //!TODO: A proper summation with hierarchy
+    getParams(name).values.sum
+  }
 }
