@@ -8,7 +8,7 @@ import scala.util.Random
 object AgentParamGenerator {
 
   final case class DecisionParams(selfParams: (Int, Double, Double),
-    groupPreferences: Map[Int, Double],
+    groupPreferences: Map[Int, String],
     groupWeights: Map[Int, Double])
 
 }
@@ -26,16 +26,16 @@ class AgentParamGenerator(studyModel: AgentBehaviorModel,
   def getSelfParams(name: String): (Int, Double, Double) = (self.toInt, preferenceGenerator
     .nextDouble(), weightsGenerator.nextDouble())
 
-
-  def groupPreferences(implicit groupMembers: Set[Int]): Map[Int, Double] =
-    groupMembers.filter(member => member != self.toInt).map(member => member -> preferenceGenerator
-      .nextDouble).toMap
+  //!TODO: Retrieve em
+  def groupExpressions(implicit groupMembers: Set[Int]): Map[Int, String] =
+    groupMembers.filter(member => member != self.toInt).map(member => member -> "AAAA").toMap
 
   def groupWeights(implicit groupMembers: Set[Int],
     max_deviation                       : Int = 3): Map[Int, Double] =
     groupMembers.filter(member => member != self.toInt).map(member => member -> weightsGenerator
       .nextDouble).toMap
 
-  def get: DecisionParams = DecisionParams(getSelfParams(self), groupPreferences(memberIndices),
+
+  def get: DecisionParams = DecisionParams(getSelfParams(self), groupExpressions(memberIndices),
     groupWeights(memberIndices))
 }

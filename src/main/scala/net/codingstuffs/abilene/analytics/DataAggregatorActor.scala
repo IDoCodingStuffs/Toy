@@ -18,7 +18,7 @@ object DataAggregatorActor {
     groupId: String,
     memberName                        : String,
     decisionParams                    : DecisionParams,
-    memberDecision                          : Boolean
+    memberExpression                  : String
   )
 
   case class ActorDataPoint(

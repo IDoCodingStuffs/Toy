@@ -7,7 +7,6 @@ import net.codingstuffs.abilene.simulation.agent._
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
 import net.codingstuffs.abilene.simulation.agent.genetics.AgentGeneticsGenerator
 import net.codingstuffs.abilene.simulation.agent.maslowian.MaslowianParamGenerator
-import net.codingstuffs.abilene.simulation.calculators.DecisionCalculator
 import net.codingstuffs.abilene.simulation.environment.AgentWorld
 import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
 
@@ -21,9 +20,9 @@ object Member {
     randomGenerator: (Random, Random)): Props =
     Props(new Member(group, behaviorModel, decisionModel, groupIndices, randomGenerator))
 
-  final case class ReceiveDecision(member: Int, decision: Boolean)
+  final case class ReceiveDecision(member: Int, expression: String)
 
-  final case class Declare(decision: Boolean)
+  final case class Declare(expression: String)
 
 }
 
@@ -45,7 +44,7 @@ class Member(group: ActorRef,
   agentParamGenerator.self = name
 
   private val initialParams: DecisionParams = agentParamGenerator.get
-  private val knownPreferences = initialParams.groupPreferences
+  private val knownExpressions = initialParams.groupPreferences
 
   private val maslowianParams = MASLOWIAN_MEAN_SD.map(
     mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
@@ -82,17 +81,15 @@ class Member(group: ActorRef,
     adjustedForGroup
   }
 
-  override def receive: Receive = onMessage(knownPreferences)
+  override def receive: Receive = onMessage(knownExpressions)
 
-  private def onMessage(knownPreferences: Map[Int, Double]): Receive = {
+  private def onMessage(knownPreferences: Map[Int, String]): Receive = {
     case message: ReceiveDecision =>
-      if (message.decision) context.become(onMessage(knownPreferences + (message.member -> 1)))
-      else context.become(onMessage(knownPreferences + (message.member -> 0)))
+      context.become(onMessage(knownPreferences + (message.member -> message.expression)))
     case Declare =>
       val param = DecisionParams(adjustedParams.selfParams, knownPreferences, adjustedParams
         .groupWeights)
       val state = (agentGenes, agentWorld, maslowianParams)
-      val calc = new DecisionCalculator(param)
-      group ! DataPoint(Declare(calc.get(decisionModel)), param, state)
+      group ! DataPoint(Declare(agentGenes), param, state)
   }
 }

@@ -45,15 +45,6 @@ object ModelParamAdjuster {
           param.groupPreferences,
           param.groupWeights.map(weights => weights._1 -> 1.0)
         )
-
-      case WeightedDecisionVsCompromise(sociotropy, autonomy) =>
-        this normalize DecisionParams(
-          (param.selfParams._1, param.selfParams._2, 1.0),
-          param.groupPreferences,
-          param.groupWeights.map(weights => weights._1 -> weights._2 * param.groupPreferences(weights._1))
-        )
-
-      case SocialImpactNSL => ???
     }
   }
 

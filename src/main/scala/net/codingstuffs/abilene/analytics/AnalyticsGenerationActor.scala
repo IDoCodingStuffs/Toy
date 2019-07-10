@@ -3,8 +3,10 @@ package net.codingstuffs.abilene.analytics
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.AnalyticsGenerationActor.Generate
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
-  DataAggregate}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
+  ActorDataPoint, ActorRawDataPoint,
+  DataAggregate
+}
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.IntegerType
@@ -58,7 +60,9 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         ),
         Seq("memberName", "groupId"))
 
-      fullAggregate.show(50)
+      fullAggregate
+        .filter($"acceptance" =!= 0.5)
+        .groupBy("groupDecision").count().show()
 
       println("group decisions with no splits")
       println(groupDecisionStats
@@ -72,7 +76,7 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         .select("groupId").distinct.count)
 
       println("distribution of conflict")
-      fullAggregate
+      println(fullAggregate
         .filter($"acceptance" =!= 0.5)
         .withColumn("conflict", $"memberDecision" =!= $"groupDecision")
         .groupBy("groupId")
@@ -80,9 +84,10 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
           sum($"conflict".cast(IntegerType)) as "conflictingMembers",
           count("conflict") as "totalMembers")
         .withColumn("conflictPercentage", $"conflictingMembers" / $"totalMembers")
-        .describe("conflictPercentage")
-        .show()
-
+        //.describe("conflictPercentage")
+        .stat.approxQuantile("conflictPercentage", Array(0.25, 0.5, 0.75), 0.0)
+        .toVector
+      )
 
       println("group decisions with split")
       println(groupDecisionStats

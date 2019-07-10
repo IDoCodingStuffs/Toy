@@ -36,7 +36,7 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
   val groupId: String = self.path.name
   val group: ActorSelection = system.actorSelection(s"/user/$groupId@@@*")
 
-  var memberDecisions: Map[Int, Boolean] = Map()
+  var memberDecisions: Map[Int, String] = Map()
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: DecisionParams, state: (String, Set[String],
@@ -54,9 +54,7 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
 
     if (memberDecisions.size == members.size) {
       //!TODO: Refactor out of actor
-      val groupAvg = memberDecisions.values.map(decision => if (decision) 1.0 else 0.0).sum /
-        memberDecisions.size
-
+      val groupAvg = 0.5
       //Most voted takes all, analytics engine has additional logic to handle splits
       dataAggregator ! GroupDataPoint(groupId, groupAvg, groupAvg > 0.5)
       //!TODO: Make cleanup more graceful
