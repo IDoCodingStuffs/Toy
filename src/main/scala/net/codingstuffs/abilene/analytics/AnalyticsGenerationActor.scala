@@ -3,12 +3,11 @@ package net.codingstuffs.abilene.analytics
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.AnalyticsGenerationActor.Generate
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
-  ActorDataPoint, ActorRawDataPoint,
-  DataAggregate
-}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
+  DataAggregate}
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.IntegerType
 
 object AnalyticsGenerationActor {
   def props: Props = Props[AnalyticsGenerationActor]
@@ -76,8 +75,12 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       fullAggregate
         .filter($"acceptance" =!= 0.5)
         .withColumn("conflict", $"memberDecision" =!= $"groupDecision")
-        .groupBy("conflict")
-        .count()
+        .groupBy("groupId")
+        .agg(
+          sum($"conflict".cast(IntegerType)) as "conflictingMembers",
+          count("conflict") as "totalMembers")
+        .withColumn("conflictPercentage", $"conflictingMembers" / $"totalMembers")
+        .describe("conflictPercentage")
         .show()
 
 
