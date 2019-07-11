@@ -32,11 +32,13 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
   var actorDataPoints: Seq[ActorDataPoint] = Seq()
   var actorRawDataPoints: Seq[ActorRawDataPoint] = Seq()
+  var groupDataPoints: Seq[GroupDataPoint] = Seq()
 
   override def receive: Receive = {
     case receipt: DataAggregate =>
       actorDataPoints = actorDataPoints ++ receipt.actorDataPoints
       actorRawDataPoints = actorRawDataPoints ++ receipt.actorRawDataPoints
+      groupDataPoints = groupDataPoints ++ receipt.groupDataPoints
 
       aggregatesReceived += 1
 
@@ -49,11 +51,17 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
       val memberStats = actorDataPoints.distinct.toDF
       val memberPreferenceStats = actorRawDataPoints.distinct.toDF
+      val groupDecisionStats = groupDataPoints.distinct.toDF
 
       val fullAggregate = memberStats.join(
-        memberPreferenceStats, Seq("memberName", "groupId"))
+        memberPreferenceStats.join(
+          groupDecisionStats,
+          "groupId"
+        ),
+        Seq("memberName", "groupId"))
 
-      fullAggregate.show()
+
+      fullAggregate.show(false)
 
   }
 }

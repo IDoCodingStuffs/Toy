@@ -17,7 +17,7 @@ object DataAggregatorActor {
   case class ActorRawDataPoint(groupId: String,
     memberName: String,
     attunementDecisionParams: ExpressionParams,
-    finalGenome: String)
+    memberExpression: String)
 
   case class ActorDataPoint(
     groupId: String,
@@ -30,6 +30,7 @@ object DataAggregatorActor {
   case class DataAggregate(
     actorDataPoints: Seq[ActorDataPoint],
     actorRawDataPoints: Seq[ActorRawDataPoint],
+    groupDataPoints: Seq[GroupDataPoint]
   )
 
 }
@@ -44,12 +45,12 @@ class DataAggregatorActor(analytics: ActorRef, assigned: Int) extends Actor with
       actorDataPoints = actorDataPoints :+ dataPoint
     case dataPoint: ActorRawDataPoint =>
       actorRawDataPoints = actorRawDataPoints :+ ActorRawDataPoint(dataPoint.groupId, dataPoint
-        .memberName, dataPoint.attunementDecisionParams, dataPoint.finalGenome.mkString
+        .memberName, dataPoint.attunementDecisionParams, dataPoint.memberExpression.mkString
         .concat(""))
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
       if (groupDataPoints.size == assigned) {
-        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints)
+        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)
       }
   }
 }
