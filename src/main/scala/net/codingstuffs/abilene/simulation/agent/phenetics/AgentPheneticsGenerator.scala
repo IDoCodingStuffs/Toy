@@ -23,5 +23,9 @@ object AgentPheneticsGenerator {
       //(random.alphanumeric.take(AgentWorld.FACTOR_LENGTH).mkString(""),
       (random.nextGaussian() * GENE_BOOST_SD + GENE_BOOST_MEAN)).toMap
 
-  def get: String = GENE_SET.keySet.toVector(random.nextInt(GENE_SET.size))
+  def get: String = {
+    if (config.getBoolean("agent.phenome.use_standard"))
+      return config.getString("agent.phenome.standard")
+    GENE_SET.keySet.toVector(random.nextInt(GENE_SET.size))
+  }
 }
