@@ -5,7 +5,7 @@ import akka.util.Timeout
 import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
 import net.codingstuffs.abilene.simulation.Abilene.system
 import net.codingstuffs.abilene.simulation.Member.Declare
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -18,7 +18,7 @@ object Group {
 
   case class DataPoint(
     declare                   : Declare,
-    memberParams              : DecisionParams,
+    memberParams              : ExpressionParams,
     state                     : (String, Set[String], List[Double]))
 
   case class GroupDataPoint(groupId: String, acceptance: Double, groupDecision: Boolean)
@@ -39,7 +39,7 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
   var memberDecisions: Map[Int, String] = Map()
 
   def receive: PartialFunction[Any, Unit] = {
-    case DataPoint(Declare(decision), params: DecisionParams, state: (String, Set[String],
+    case DataPoint(Declare(decision), params: ExpressionParams, state: (String, Set[String],
       List[Double])) =>
 
     val memberName = sender().path.name.split("@@@")(1)

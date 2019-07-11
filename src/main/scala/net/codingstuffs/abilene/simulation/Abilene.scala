@@ -55,7 +55,7 @@ object Abilene extends App {
     groupMembers.foreach(index => {
       memberAgents = memberAgents :+ system.actorOf(
         Member.props(
-          group, studyModel, DECISION_MODEL, groupMembers,
+          group, studyModel, groupMembers,
           (PREFERENCE_GENERATOR, WEIGHTS_GENERATOR)
         ),
         s"$groupId@@@$index")

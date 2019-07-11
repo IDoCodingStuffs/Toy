@@ -5,7 +5,7 @@ import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
   ActorDataPoint, ActorRawDataPoint,
   DataAggregate
 }
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
+import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 
 object DataAggregatorActor {
@@ -17,7 +17,7 @@ object DataAggregatorActor {
   case class ActorRawDataPoint(
     groupId: String,
     memberName                        : String,
-    decisionParams                    : DecisionParams,
+    crossoverDecisionParams                    : ExpressionParams,
     memberExpression                  : String
   )
 

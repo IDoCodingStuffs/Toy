@@ -60,45 +60,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         ),
         Seq("memberName", "groupId"))
 
-      fullAggregate
-        .filter($"acceptance" =!= 0.5)
-        .groupBy("groupDecision").count().show()
 
-      println("group decisions with no splits")
-      println(groupDecisionStats
-        .filter($"acceptance" =!= 0.5)
-        .count)
-
-      println("group decisions with conflict")
-      println(fullAggregate
-        .filter($"acceptance" =!= 0.5)
-        .filter($"memberDecision" =!= $"groupDecision")
-        .select("groupId").distinct.count)
-
-      println("distribution of conflict")
-      println(fullAggregate
-        .filter($"acceptance" =!= 0.5)
-        .withColumn("conflict", $"memberDecision" =!= $"groupDecision")
-        .groupBy("groupId")
-        .agg(
-          sum($"conflict".cast(IntegerType)) as "conflictingMembers",
-          count("conflict") as "totalMembers")
-        .withColumn("conflictPercentage", $"conflictingMembers" / $"totalMembers")
-        //.describe("conflictPercentage")
-        .stat.approxQuantile("conflictPercentage", Array(0.25, 0.5, 0.75), 0.0)
-        .toVector
-      )
-
-      println("group decisions with split")
-      println(groupDecisionStats
-        .filter($"acceptance" === 0.5)
-        .count)
-
-    //    groupDecisionCompositionAnalytics.decisionParadoxes.write.csv(s"
-    //    ./data/decision_composition/$jobRunAtDateTime/decisionParadoxStats")
-    //    groupDecisionStats.coalesce(1).write.json(s"
-    //    ./data/decision_composition/$jobRunAtDateTime/yes_vote_counts")
-    //    memberStats.write.json(s"./data/member_behavior/$jobRunAtDateTime/full")
+      fullAggregate.show()
 
   }
 }
