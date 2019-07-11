@@ -12,19 +12,32 @@ object IterationBehavior {
     else {
       val preferences = params.groupWeights.map(item =>
         params.groupWeights.values.filter(subitem => subitem == item._2).sum ->
-        params.groupWeights.filter(subitem => subitem._2 == item._2).keySet
+          params.groupWeights.filter(subitem => subitem._2 == item._2).keySet
       )
 
       val normalizedPref = preferences.map(item => (item._1 / preferences.keySet.sum) -> item._2)
+      val pickPossibilities = normalizedPref.keySet.toList.sorted
+      //!TODO: Refactor this ugliness
+      val pickIndex = probabilisticPick(pickPossibilities)
 
-      val pickIndex = normalizedPref.keySet.filter(item => item > random.nextDouble()).min.toInt
-
-      val pick =
-        params.groupExpressions(normalizedPref(pickIndex)
-          .toVector(random.nextInt(normalizedPref(pickIndex).size)
-          ))
+      val pick = (params.groupExpressions + (params.selfParams._1 -> params.selfParams._2))(pickIndex)
 
       Mutations.attune(phenome, pick)
     }
+  }
+
+  def probabilisticPick(myList: List[Double]): Int = {
+    val roll = random.nextDouble()
+    var sum = 0.0
+
+    myList.indices.foreach( index =>
+      {
+        sum += myList(index)
+        if (roll < sum) {
+          return index + 1
+        }
+      }
+    )
+    0
   }
 }
