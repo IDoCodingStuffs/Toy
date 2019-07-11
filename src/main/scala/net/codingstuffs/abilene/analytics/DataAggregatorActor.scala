@@ -10,29 +10,26 @@ import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 
 object DataAggregatorActor {
   def props(
-    analyzer       : ActorRef,
+    analyzer: ActorRef,
     assigned       : Int): Props =
     Props(new DataAggregatorActor(analyzer, assigned))
 
-  case class ActorRawDataPoint(
-    groupId: String,
-    memberName                        : String,
-    crossoverDecisionParams                    : ExpressionParams,
-    memberExpression                  : String
-  )
+  case class ActorRawDataPoint(groupId: String,
+    memberName: String,
+    attunementDecisionParams: ExpressionParams,
+    finalGenome: String)
 
   case class ActorDataPoint(
-    groupId                        : String,
+    groupId: String,
     memberName: String,
-    genome                         : String,
-    environment                    : Set[String],
-    maslowian                      : List[Double]
+    genome: String,
+    environment: Set[String],
+    maslowian: List[Double]
   )
 
   case class DataAggregate(
-    actorDataPoints : Seq[ActorDataPoint],
+    actorDataPoints: Seq[ActorDataPoint],
     actorRawDataPoints: Seq[ActorRawDataPoint],
-    groupDataPoints: Seq[GroupDataPoint]
   )
 
 }
@@ -46,10 +43,13 @@ class DataAggregatorActor(analytics: ActorRef, assigned: Int) extends Actor with
     case dataPoint: ActorDataPoint =>
       actorDataPoints = actorDataPoints :+ dataPoint
     case dataPoint: ActorRawDataPoint =>
-      actorRawDataPoints = actorRawDataPoints :+ dataPoint
+      actorRawDataPoints = actorRawDataPoints :+ ActorRawDataPoint(dataPoint.groupId, dataPoint
+        .memberName, dataPoint.attunementDecisionParams, dataPoint.finalGenome.mkString
+        .concat(""))
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
       if (groupDataPoints.size == assigned) {
-        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)}
+        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints)
+      }
   }
 }

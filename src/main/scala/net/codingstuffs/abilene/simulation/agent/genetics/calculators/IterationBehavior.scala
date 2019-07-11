@@ -24,7 +24,7 @@ object IterationBehavior {
           .toVector(random.nextInt(normalizedPref(pickIndex).size)
           ))
 
-      Mutations.crossover(genome, pick)
+      Mutations.attune(genome, pick)
     }
   }
 }
