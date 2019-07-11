@@ -15,9 +15,10 @@ object Mutations {
 
   def mutate(phenome: String): String = {
     val mutationStrength = config.getInt("agent.phenome.mutation.strength")
-    phenome.map(char =>
-      if (random.nextBoolean)
-        (char.toInt + random.nextInt(mutationStrength) * (if (random.nextBoolean) -1 else 1)).toChar
-      else char)
+    val location = random.nextInt(phenome.length)
+    phenome.substring(0, location) +
+        (phenome.charAt(location).toInt + random.nextInt(mutationStrength) *
+          (if (random.nextBoolean) -1 else 1)).toChar +
+    phenome.substring(location + 1)
   }
 }

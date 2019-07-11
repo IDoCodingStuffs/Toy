@@ -96,7 +96,7 @@ class Member(group: ActorRef,
       val state = (initialPhenome, agentWorld, maslowianParams)
       group ! DataPoint(
         Declare(IterationBehavior
-          .pickMutatedSelfOrCrossover(mutatedPhenome, param)),
+          .pickMutatedSelfOrAttune(mutatedPhenome, param)),
         param, state)
   }
 }

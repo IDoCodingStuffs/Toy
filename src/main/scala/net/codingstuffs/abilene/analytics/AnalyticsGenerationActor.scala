@@ -2,14 +2,10 @@ package net.codingstuffs.abilene.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.analytics.AnalyticsGenerationActor.Generate
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
-  ActorDataPoint, ActorRawDataPoint,
-  DataAggregate
-}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
+  DataAggregate}
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.IntegerType
 
 object AnalyticsGenerationActor {
   def props: Props = Props[AnalyticsGenerationActor]
@@ -47,7 +43,6 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
     case Generate =>
       import sparkSession.implicits._
-      import org.apache.spark.sql.functions._
 
       val memberStats = actorDataPoints.distinct.toDF
       val memberPreferenceStats = actorRawDataPoints.distinct.toDF
@@ -62,7 +57,5 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
 
       fullAggregate.show(false)
-
-      fullAggregate.select(avg("averageDistance")).show
   }
 }

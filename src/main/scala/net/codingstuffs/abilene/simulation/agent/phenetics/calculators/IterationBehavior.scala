@@ -7,7 +7,7 @@ import scala.util.Random
 object IterationBehavior {
   private val random  = Random
 
-  def pickMutatedSelfOrCrossover(phenome: String, params: ExpressionParams): String = {
+  def pickMutatedSelfOrAttune(phenome: String, params: ExpressionParams): String = {
     if (random.nextDouble() <= params.selfParams._3) phenome
     else {
       val preferences = params.groupWeights.map(item =>
@@ -16,17 +16,18 @@ object IterationBehavior {
       )
 
       val normalizedPref = preferences.map(item => (item._1 / preferences.keySet.sum) -> item._2)
-      val pickPossibilities = normalizedPref.keySet.toList.sorted
-      //!TODO: Refactor this ugliness
-      val pickIndex = probabilisticPick(pickPossibilities)
+      val pickPossibilities = normalizedPref(probabilisticPick(normalizedPref.keySet.toList.sorted))
 
-      val pick = (params.groupExpressions + (params.selfParams._1 -> params.selfParams._2))(pickIndex)
+      val pick = params.groupExpressions(
+        pickPossibilities.toVector(random.nextInt(pickPossibilities.size)))
 
+      //!TODO: Attunement happens at the mutated loc
       Mutations.attune(phenome, pick)
     }
   }
 
-  def probabilisticPick(myList: List[Double]): Int = {
+  //!TODO: Refactor?
+  def probabilisticPick(myList: List[Double]): Double = {
     val roll = random.nextDouble()
     var sum = 0.0
 
@@ -34,7 +35,7 @@ object IterationBehavior {
       {
         sum += myList(index)
         if (roll < sum) {
-          return index + 1
+          return myList(index)
         }
       }
     )

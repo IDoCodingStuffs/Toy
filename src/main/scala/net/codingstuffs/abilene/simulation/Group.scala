@@ -24,7 +24,6 @@ object Group {
   case class GroupDataPoint(
     groupId: String,
     phenomeClusterCenter: Array[Int],
-    averageDistance: Int,
     distancePerMember: Array[Array[Int]])
 
 }
@@ -66,17 +65,12 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
       }
         .map(item => item / phenomesNumerized.size)
 
-      val averageDistance = phenomesNumerized
-        .map(phenome => centroid.zip(phenome).map(i => math.abs(i._1 - i._2)).sum)
-        .map(item => item / (phenomesNumerized.size * emptyCentroid.length)).sum
-
       val distancePerMember = phenomesNumerized
         .map(phenome => centroid.zip(phenome).map(i => math.abs(i._1 - i._2)))
 
       dataAggregator ! GroupDataPoint(
         groupId,
         centroid,
-        averageDistance,
         distancePerMember.toArray
       )
       //!TODO: Make cleanup more graceful
