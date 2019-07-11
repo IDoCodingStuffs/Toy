@@ -8,17 +8,25 @@ object Mutations {
   val random: Random = Random
   val config: Config = ConfigFactory.load
 
-  def attune(phenome_1   : String, phenome_2: String): String =
+  def attune(phenome_1: (String, Int), phenome_2: String): String = {
+    val attunementHalf = config.getInt("agent.phenome.attunement.half_size")
+    0.until(phenome_1._1.length).map(index =>
+      if (index < phenome_1._2 - attunementHalf || index > phenome_1._2 + attunementHalf)
+        phenome_1._1.charAt(index)
+      else phenome_2.charAt(index)).mkString
+
+  }
+
+  def crossOver(phenome_1: String, phenome_2: String): String =
     0.until(phenome_1.length).map(index =>
       if (random.nextBoolean) phenome_1.charAt(index) else phenome_2.charAt(index)).mkString
 
-
-  def mutate(phenome: String): String = {
+  def mutate(phenome: String): (String, Int) = {
     val mutationStrength = config.getInt("agent.phenome.mutation.strength")
     val location = random.nextInt(phenome.length)
-    phenome.substring(0, location) +
+    (phenome.substring(0, location) +
         (phenome.charAt(location).toInt + random.nextInt(mutationStrength) *
           (if (random.nextBoolean) -1 else 1)).toChar +
-    phenome.substring(location + 1)
+    phenome.substring(location + 1), location)
   }
 }

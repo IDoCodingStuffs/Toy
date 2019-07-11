@@ -7,8 +7,8 @@ import scala.util.Random
 object IterationBehavior {
   private val random  = Random
 
-  def pickMutatedSelfOrAttune(phenome: String, params: ExpressionParams): String = {
-    if (random.nextDouble() <= params.selfParams._3) phenome
+  def pickMutatedSelfOrAttune(mutatedPhenome: (String, Int), initialPhenome: String, params: ExpressionParams): String = {
+    if (random.nextDouble() <= params.selfParams._3) mutatedPhenome._1
     else {
       val preferences = params.groupWeights.map(item =>
         params.groupWeights.values.filter(subitem => subitem == item._2).sum ->
@@ -22,7 +22,7 @@ object IterationBehavior {
         pickPossibilities.toVector(random.nextInt(pickPossibilities.size)))
 
       //!TODO: Attunement happens at the mutated loc
-      Mutations.attune(phenome, pick)
+      Mutations.attune(mutatedPhenome, pick)
     }
   }
 

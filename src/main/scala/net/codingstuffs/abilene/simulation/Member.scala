@@ -56,10 +56,10 @@ class Member(group: ActorRef,
 
   private val adjustedParams: ExpressionParams = {
     val adjustedForSelf = ExpressionParams(
-      (initialParams.selfParams._1, mutatedPhenome,
+      (initialParams.selfParams._1, mutatedPhenome._1,
         //!TODO: Refactor into its own method in a util
         //!TODO: Introduce a scoring system or something instead of constant fitness on first match
-        if (mutatedPhenome.map(
+        if (mutatedPhenome._1.map(
           c => agentWorld.contains(c.toString)).foldLeft(false)(_ || _))
           initialParams.selfParams._3
         else config.getDouble("agent.phenome.base_utility")),
@@ -96,7 +96,7 @@ class Member(group: ActorRef,
       val state = (initialPhenome, agentWorld, maslowianParams)
       group ! DataPoint(
         Declare(IterationBehavior
-          .pickMutatedSelfOrAttune(mutatedPhenome, param)),
+          .pickMutatedSelfOrAttune(mutatedPhenome, initialPhenome, param)),
         param, state)
   }
 }
