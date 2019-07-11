@@ -1,4 +1,4 @@
-package net.codingstuffs.abilene.simulation.agent.genetics.calculators
+package net.codingstuffs.abilene.simulation.agent.phenetics.calculators
 
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
 
@@ -7,8 +7,8 @@ import scala.util.Random
 object IterationBehavior {
   private val random  = Random
 
-  def pickMutatedSelfOrCrossover(genome: String, params: ExpressionParams): String = {
-    if (random.nextDouble() <= params.selfParams._3) genome
+  def pickMutatedSelfOrCrossover(phenome: String, params: ExpressionParams): String = {
+    if (random.nextDouble() <= params.selfParams._3) phenome
     else {
       val preferences = params.groupWeights.map(item =>
         params.groupWeights.values.filter(subitem => subitem == item._2).sum ->
@@ -24,7 +24,7 @@ object IterationBehavior {
           .toVector(random.nextInt(normalizedPref(pickIndex).size)
           ))
 
-      Mutations.attune(genome, pick)
+      Mutations.attune(phenome, pick)
     }
   }
 }

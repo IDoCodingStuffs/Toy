@@ -63,5 +63,6 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
       fullAggregate.show(false)
 
+      fullAggregate.select(avg("averageDistance")).show
   }
 }

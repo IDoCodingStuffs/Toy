@@ -6,7 +6,7 @@ import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.Group.DataPoint
 import net.codingstuffs.abilene.simulation.agent._
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
-import net.codingstuffs.abilene.simulation.agent.genetics.calculators.{IterationBehavior, Mutations}
+import net.codingstuffs.abilene.simulation.agent.phenetics.calculators.{IterationBehavior, Mutations}
 import net.codingstuffs.abilene.simulation.agent.maslowian.MaslowianParamGenerator
 import net.codingstuffs.abilene.simulation.environment.AgentWorld
 import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
@@ -43,8 +43,8 @@ class Member(group: ActorRef,
   agentParamGenerator.self = name
 
   private val initialParams: ExpressionParams = agentParamGenerator.get
-  private val initialGenome = initialParams.selfParams._2
-  private val mutatedGenome = Mutations.mutate(initialGenome)
+  private val initialPhenome = initialParams.selfParams._2
+  private val mutatedPhenome = Mutations.mutate(initialPhenome)
 
   private val agentWorld = AgentWorld.get
 
@@ -56,13 +56,13 @@ class Member(group: ActorRef,
 
   private val adjustedParams: ExpressionParams = {
     val adjustedForSelf = ExpressionParams(
-      (initialParams.selfParams._1, mutatedGenome,
+      (initialParams.selfParams._1, mutatedPhenome,
         //!TODO: Refactor into its own method in a util
         //!TODO: Introduce a scoring system or something instead of constant fitness on first match
-        if (mutatedGenome.map(
+        if (mutatedPhenome.map(
           c => agentWorld.contains(c.toString)).foldLeft(false)(_ || _))
           initialParams.selfParams._3
-        else config.getDouble("agent.genome.base_utility")),
+        else config.getDouble("agent.phenome.base_utility")),
 
       initialParams.groupExpressions,
       initialParams.groupWeights
@@ -93,10 +93,10 @@ class Member(group: ActorRef,
     case Declare =>
       val param = ExpressionParams(adjustedParams.selfParams, knownPreferences, adjustedParams
         .groupWeights)
-      val state = (initialGenome, agentWorld, maslowianParams)
+      val state = (initialPhenome, agentWorld, maslowianParams)
       group ! DataPoint(
         Declare(IterationBehavior
-          .pickMutatedSelfOrCrossover(mutatedGenome, param)),
+          .pickMutatedSelfOrCrossover(mutatedPhenome, param)),
         param, state)
   }
 }

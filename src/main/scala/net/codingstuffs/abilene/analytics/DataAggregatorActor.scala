@@ -22,7 +22,7 @@ object DataAggregatorActor {
   case class ActorDataPoint(
     groupId: String,
     memberName: String,
-    genome: String,
+    phenome: String,
     environment: Set[String],
     maslowian: List[Double]
   )

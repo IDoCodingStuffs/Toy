@@ -1,4 +1,4 @@
-package net.codingstuffs.abilene.simulation.agent.genetics
+package net.codingstuffs.abilene.simulation.agent.phenetics
 
 object Models {
 

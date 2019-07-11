@@ -2,7 +2,7 @@ package net.codingstuffs.abilene.simulation.agent
 
 
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
-import net.codingstuffs.abilene.simulation.agent.genetics.AgentGeneticsGenerator
+import net.codingstuffs.abilene.simulation.agent.phenetics.AgentPheneticsGenerator
 
 import scala.util.Random
 
@@ -12,7 +12,7 @@ object AgentParamGenerator {
     groupExpressions: Map[Int, String],
     groupWeights: Map[Int, Double])
 
-  var groupGenomes: Map[String, Map[Int, String]] = Map()
+  var groupPhenomes: Map[String, Map[Int, String]] = Map()
 
 }
 
@@ -29,8 +29,8 @@ class AgentParamGenerator(studyModel: AgentBehaviorModel,
   val weightsGenerator: Random = randomGenerators._2
 
   private val agentGenes: Map[Int, String ] =
-    if (groupGenomes.keySet.contains(groupId)) groupGenomes(groupId)
-    else memberIndices.map(index => index -> AgentGeneticsGenerator.get).toMap
+    if (groupPhenomes.keySet.contains(groupId)) groupPhenomes(groupId)
+    else memberIndices.map(index => index -> AgentPheneticsGenerator.get).toMap
 
 
   def getSelfParams(name: String): (Int, String, Double) = (self.toInt, agentGenes(self.toInt),
