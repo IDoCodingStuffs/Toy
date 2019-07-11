@@ -43,6 +43,7 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
     case Generate =>
       import sparkSession.implicits._
+      import org.apache.spark.sql.functions._
 
       val memberStats = actorDataPoints.distinct.toDF
       val memberPreferenceStats = actorRawDataPoints.distinct.toDF
@@ -56,6 +57,6 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         Seq("memberName", "groupId"))
 
 
-      fullAggregate.show(false)
+      fullAggregate.groupBy("memberExpression").count().orderBy(desc("count")).show()
   }
 }

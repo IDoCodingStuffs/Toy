@@ -17,12 +17,15 @@ object Mutations {
 
   }
 
-  def crossOver(phenome_1: String, phenome_2: String): String =
-    0.until(phenome_1.length).map(index =>
-      if (random.nextBoolean) phenome_1.charAt(index) else phenome_2.charAt(index)).mkString
+  def randomCrossover(phenome_1: String, phenome_2: String): (String, String) = {
+    val pairedChars = 0.until(phenome_1.length).map(index =>
+      if (random.nextBoolean) (phenome_1.charAt(index), phenome_2.charAt(index))
+      else (phenome_2.charAt(index), phenome_1.charAt(index)))
+    (pairedChars.map(item => item._1).mkString, pairedChars.map(item => item._2).mkString)
+  }
 
   def mutate(phenome: String): (String, Int) = {
-    val mutationStrength = config.getInt("agent.phenome.mutation.strength")
+    val mutationStrength = random.nextInt(config.getInt("agent.phenome.mutation.strength")) + 1
     val location = random.nextInt(phenome.length)
     (phenome.substring(0, location) +
         (phenome.charAt(location).toInt + random.nextInt(mutationStrength) *
