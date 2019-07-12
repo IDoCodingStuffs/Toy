@@ -23,7 +23,6 @@ object DataAggregatorActor {
     groupId: String,
     memberName: String,
     phenome: String,
-    environment: Set[String],
     maslowian: List[Double]
   )
 

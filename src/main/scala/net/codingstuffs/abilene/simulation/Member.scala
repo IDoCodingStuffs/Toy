@@ -3,13 +3,13 @@ package net.codingstuffs.abilene.simulation
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
-import net.codingstuffs.abilene.simulation.Group.DataPoint
 import net.codingstuffs.abilene.simulation.agent._
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
-import net.codingstuffs.abilene.simulation.agent.phenetics.calculators.{IterationBehavior, Mutations}
 import net.codingstuffs.abilene.simulation.agent.maslowian.MaslowianParamGenerator
-import net.codingstuffs.abilene.simulation.environment.AgentWorld
+import net.codingstuffs.abilene.simulation.agent.phenetics.calculators.{IterationBehavior, Mutations}
+import net.codingstuffs.abilene.simulation.agent.phenetics.AgentPheneticsGenerator
 import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
+import net.codingstuffs.abilene.simulation.Group.DataPoint
 
 import scala.util.Random
 
@@ -46,8 +46,6 @@ class Member(group: ActorRef,
   private val initialPhenome = initialParams.selfParams._2
   private val mutatedPhenome = Mutations.mutate(initialPhenome)
 
-  private val agentWorld = AgentWorld.get
-
   private val knownExpressions = initialParams.groupExpressions
 
   private val maslowianParams = MASLOWIAN_MEAN_SD.map(
@@ -59,9 +57,8 @@ class Member(group: ActorRef,
       (initialParams.selfParams._1, mutatedPhenome._1,
         //!TODO: Refactor into its own method in a util
         //!TODO: Introduce a scoring system or something instead of constant fitness on first match
-        if (mutatedPhenome._1.map(
-          c => agentWorld.contains(c.toString)).foldLeft(false)(_ || _))
-          initialParams.selfParams._3
+        if (AgentPheneticsGenerator.GENE_SET.contains(mutatedPhenome._1))
+          initialParams.selfParams._3 * AgentPheneticsGenerator.GENE_SET(mutatedPhenome._1)
         else config.getDouble("agent.phenome.base_utility")),
 
       initialParams.groupExpressions,
@@ -93,7 +90,7 @@ class Member(group: ActorRef,
     case Declare =>
       val param = ExpressionParams(adjustedParams.selfParams, knownPreferences, adjustedParams
         .groupWeights)
-      val state = (initialPhenome, agentWorld, maslowianParams)
+      val state = (initialPhenome, maslowianParams)
       group ! DataPoint(
         Declare(IterationBehavior
           .pickMutatedSelfOrAttune(mutatedPhenome, initialPhenome, param)),

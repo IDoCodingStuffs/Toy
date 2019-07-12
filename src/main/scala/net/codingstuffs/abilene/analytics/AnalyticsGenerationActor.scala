@@ -56,7 +56,11 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         ),
         Seq("memberName", "groupId"))
 
-
-      fullAggregate.groupBy("memberExpression").count().orderBy(desc("count")).show()
+      fullAggregate.groupBy($"memberExpression").count()
+//        .select(
+//          (sum("count") - max("count")) /
+//          sum("count")
+//            * 100 as "Retained Mutations %")
+        .show()
   }
 }

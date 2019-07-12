@@ -28,7 +28,7 @@ class AgentParamGenerator(studyModel: AgentBehaviorModel,
   val preferenceGenerator: Random = randomGenerators._1
   val weightsGenerator: Random = randomGenerators._2
 
-  private val agentGenes: Map[Int, String ] =
+  val agentGenes: Map[Int, String ] =
     if (groupPhenomes.keySet.contains(groupId)) groupPhenomes(groupId)
     else memberIndices.map(index => index -> AgentPheneticsGenerator.get).toMap
 
