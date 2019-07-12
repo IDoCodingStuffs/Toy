@@ -1,11 +1,13 @@
 package net.codingstuffs.abilene.simulation.agent.phenetics.calculators
 
+import net.codingstuffs.abilene.intake.parse.ConfigUtil
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
 
 import scala.util.Random
 
 object IterationBehavior {
   private val random  = Random
+  random.setSeed(ConfigUtil.BEHAVIOR_GENERATOR_SEED)
 
   def pickMutatedSelfOrAttune(mutatedPhenome: (String, Int), initialPhenome: String, params: ExpressionParams): String = {
     if (random.nextDouble() <= params.selfParams._3 / params.groupWeights.values.sum) mutatedPhenome._1

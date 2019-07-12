@@ -9,7 +9,7 @@ object AgentPheneticsGenerator {
   //!TODO: Add matching for different models
   private val config = ConfigFactory.load()
   private val random = Random
-  random.setSeed(ConfigUtil.GENERATOR_SEED)
+  random.setSeed(ConfigUtil.GENE_GENERATOR_SEED)
 
   //!TODO: Move these into a config util
   private final val PHENOME_LENGTH = config.getInt("agent.phenome.length")

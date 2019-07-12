@@ -10,7 +10,7 @@ object Beta {
 }
 
 class Beta(alpha: Double, beta: Double) extends Random {
-  self.setSeed(ConfigUtil.GENERATOR_SEED)
+  self.setSeed(ConfigUtil.MAIN_GENERATOR_SEED)
 
   override def nextDouble: Double =
     new BetaDistribution(alpha, beta).inverseCumulativeProbability(super.nextDouble)

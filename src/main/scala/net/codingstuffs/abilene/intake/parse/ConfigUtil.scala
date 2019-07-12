@@ -9,7 +9,10 @@ import scala.util.Random
 object ConfigUtil {
   val config: Config = ConfigFactory.load()
 
-  final val GENERATOR_SEED = config.getLong("generator.seed")
+  final val MAIN_GENERATOR_SEED = config.getLong("generator.main.seed")
+  final val BEHAVIOR_GENERATOR_SEED = config.getLong("generator.behavior.seed")
+  final val GENE_GENERATOR_SEED = config.getLong("generator.gene.seed")
+  final val MUTATION_GENERATOR_SEED = config.getLong("generator.mutation.seed")
 
   final val PREFERENCE_GENERATOR: Random = {
     config.getString("generator.preference") match {

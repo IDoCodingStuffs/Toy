@@ -9,7 +9,7 @@ object Discrete {
 }
 
 class Discrete(values: Seq[Double]) extends Random{
-  self.setSeed(ConfigUtil.GENERATOR_SEED)
+  self.setSeed(ConfigUtil.MAIN_GENERATOR_SEED)
 
   override def nextDouble: Double = shuffle(values).head
 }
