@@ -1,5 +1,7 @@
 package net.codingstuffs.abilene.simulation.generators.random
 
+import net.codingstuffs.abilene.intake.parse.ConfigUtil
+
 import scala.util.Random
 
 object FoldedGaussian {
@@ -8,5 +10,7 @@ object FoldedGaussian {
 }
 
 class FoldedGaussian(mean: Double, sd: Double) extends Random {
+  self.setSeed(ConfigUtil.GENERATOR_SEED)
+
   override def nextDouble: Double = math.abs(super.nextGaussian * sd) + mean
 }

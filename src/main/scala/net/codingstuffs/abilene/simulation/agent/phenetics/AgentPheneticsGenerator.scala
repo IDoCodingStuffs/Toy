@@ -1,7 +1,7 @@
 package net.codingstuffs.abilene.simulation.agent.phenetics
 
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.simulation.environment.AgentWorld
+import net.codingstuffs.abilene.intake.parse.ConfigUtil
 
 import scala.util.Random
 
@@ -9,6 +9,7 @@ object AgentPheneticsGenerator {
   //!TODO: Add matching for different models
   private val config = ConfigFactory.load()
   private val random = Random
+  random.setSeed(ConfigUtil.GENERATOR_SEED)
 
   //!TODO: Move these into a config util
   private final val PHENOME_LENGTH = config.getInt("agent.phenome.length")
