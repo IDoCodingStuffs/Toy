@@ -19,13 +19,14 @@ class MaslowianParamGenerator(listAttr: Map[String, Double]) {
   def getMaslowianSum(name: String): Double = {
     //!TODO: Customizable Maslowians?
     val exponents = config.getDoubleList("maslowian.exponents")
+    val defMulti = math.pow(10, config.getDouble("maslowian.multiplier.power_of_ten"))
 
-    val physio = math.pow(getParams(name)("physio"), exponents.get(0))
-    val safety = math.pow(getParams(name)("safety"), exponents.get(1))
-    val affiliation = math.pow(getParams(name)("affiliation"), exponents.get(2))
-    val mate_acquisition = math.pow(getParams(name)("mate_acquisition"), exponents.get(3))
-    val mate_retention = math.pow(getParams(name)("mate_retention"), exponents.get(4))
-    val parenting = math.pow(getParams(name)("parenting"), exponents.get(5))
+    val physio = math.pow(getParams(name)("physio"), exponents.get(0)) * defMulti
+    val safety = math.pow(getParams(name)("safety"), exponents.get(1)) * defMulti
+    val affiliation = math.pow(getParams(name)("affiliation"), exponents.get(2)) * defMulti
+    val mate_acquisition = math.pow(getParams(name)("mate_acquisition"), exponents.get(3)) * defMulti
+    val mate_retention = math.pow(getParams(name)("mate_retention"), exponents.get(4)) * defMulti
+    val parenting = math.pow(getParams(name)("parenting"), exponents.get(5)) * defMulti
 
     physio +
     physio * safety +
