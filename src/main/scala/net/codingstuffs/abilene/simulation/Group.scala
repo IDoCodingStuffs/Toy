@@ -19,7 +19,7 @@ object Group {
   case class DataPoint(
     declare                   : Declare,
     memberParams              : ExpressionParams,
-    state                     : (String, List[Double]))
+    state                     : (String, Map[String, Double]))
 
   case class GroupDataPoint(
     groupId: String,
@@ -43,7 +43,7 @@ class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with Acto
 
   def receive: PartialFunction[Any, Unit] = {
     case DataPoint(Declare(decision), params: ExpressionParams, state: (String,
-      List[Double])) =>
+      Map[String, Double])) =>
 
     val memberName = sender().path.name.split("@@@")(1)
     memberExpressions += (memberName.toInt -> decision)

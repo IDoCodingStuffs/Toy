@@ -44,12 +44,13 @@ object ConfigUtil {
   }
 
   final val MASLOWIAN_MEAN_SD: Map[String, (Double, Double)] = {
-    val means = config.getString("maslowian.means").split(",").map(i => i.toDouble).toSeq
-    val sd = config.getString("maslowian.sd").split(",").map(i => i.toDouble).toSeq
+    val means = config.getDoubleList("maslowian.means").toArray
+    val sd = config.getDoubleList("maslowian.sd").toArray
 
     val labels = Seq("physio", "safety", "affiliation", "mate_acquisition", "mate_retention",
       "parenting")
 
-    labels.zipWithIndex.map(label => label._1 -> (means(label._2), sd(label._2))).toMap
+    labels.zipWithIndex.map(label => label._1 ->
+      (means(label._2).asInstanceOf[Double], sd(label._2).asInstanceOf[Double])).toMap
   }
 }

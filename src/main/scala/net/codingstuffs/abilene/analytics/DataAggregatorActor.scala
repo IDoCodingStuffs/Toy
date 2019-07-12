@@ -23,7 +23,7 @@ object DataAggregatorActor {
     groupId: String,
     memberName: String,
     phenome: String,
-    maslowian: List[Double]
+    maslowian: Map[String,Double]
   )
 
   case class DataAggregate(

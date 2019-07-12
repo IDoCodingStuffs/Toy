@@ -49,8 +49,8 @@ class Member(group: ActorRef,
   private val knownExpressions = initialParams.groupExpressions
 
   private val maslowianParams = MASLOWIAN_MEAN_SD.map(
-    mapping => FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
-  ).toList
+    mapping => mapping._1 -> FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
+  )
 
   private val adjustedParams: ExpressionParams = {
     val adjustedForSelf = ExpressionParams(

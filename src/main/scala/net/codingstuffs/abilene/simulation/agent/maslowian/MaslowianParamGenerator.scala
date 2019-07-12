@@ -2,7 +2,7 @@ package net.codingstuffs.abilene.simulation.agent.maslowian
 
 import com.typesafe.config.ConfigFactory
 
-class MaslowianParamGenerator(listAttr: List[Double]) {
+class MaslowianParamGenerator(listAttr: Map[String, Double]) {
 
   private val config = ConfigFactory.load()
 
@@ -14,14 +14,7 @@ class MaslowianParamGenerator(listAttr: List[Double]) {
   Contemporary Extensions Built Upon Ancient Foundations.
   Perspect Psychol Sci. 2010;5(3):292–314. doi:10.1177/1745691610369469
  */
-  def getParams(name: String): Map[String, Double] = Map(
-    "physio" -> listAttr.head,
-    "safety" -> listAttr(1),
-    "affiliation" -> listAttr(2),
-    "mate_acquisition" -> listAttr(3),
-    "mate_retention" -> listAttr(4),
-    "parenting" -> listAttr(5)
-  )
+  def getParams(name: String): Map[String, Double] = listAttr
 
   def getMaslowianSum(name: String): Double = {
     //!TODO: Customizable Maslowians?
