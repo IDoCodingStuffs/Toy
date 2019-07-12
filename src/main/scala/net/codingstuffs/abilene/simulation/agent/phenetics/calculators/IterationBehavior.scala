@@ -8,7 +8,7 @@ object IterationBehavior {
   private val random  = Random
 
   def pickMutatedSelfOrAttune(mutatedPhenome: (String, Int), initialPhenome: String, params: ExpressionParams): String = {
-    if (random.nextDouble() <= params.selfParams._3) mutatedPhenome._1
+    if (random.nextDouble() <= params.selfParams._3 / params.groupWeights.values.sum) mutatedPhenome._1
     else {
       val preferences = params.groupWeights.map(item =>
         params.groupWeights.values.filter(subitem => subitem == item._2).sum ->
