@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
+import net.codingstuffs.abilene.intake.parse.ConfigUtil
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
 import org.joda.time.LocalDateTime
@@ -24,6 +25,10 @@ object Abilene extends App {
   val aggregatorCount = config.getInt("data.aggregator.count")
 
   val random = new Random
+  random.setSeed(ConfigUtil.GROUP_GENERATOR_SEED)
+  PREFERENCE_GENERATOR.setSeed(ConfigUtil.MAIN_GENERATOR_SEED)
+  WEIGHTS_GENERATOR.setSeed(ConfigUtil.MAIN_GENERATOR_SEED)
+
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
   val studyModel = config.getString("agent.behavior.model") match {
