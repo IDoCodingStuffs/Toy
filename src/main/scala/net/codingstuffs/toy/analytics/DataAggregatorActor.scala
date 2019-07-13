@@ -1,36 +1,30 @@
-package net.codingstuffs.abilene.analytics
+package net.codingstuffs.toy.analytics
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
-  ActorDataPoint, ActorRawDataPoint,
-  DataAggregate
-}
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.DecisionParams
-import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
+import net.codingstuffs.toy.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.toy.iteration.agent.ConductorActor.GroupDataPoint
+import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
 
 object DataAggregatorActor {
   def props(
-    analyzer       : ActorRef,
+    analyzer: ActorRef,
     assigned       : Int): Props =
     Props(new DataAggregatorActor(analyzer, assigned))
 
-  case class ActorRawDataPoint(
-    groupId: String,
-    memberName                        : String,
-    decisionParams                    : DecisionParams,
-    decision                          : Boolean
-  )
+  case class ActorRawDataPoint(groupId: String,
+    memberName: String,
+    attunementDecisionParams: ExpressionParams,
+    memberExpression: String)
 
   case class ActorDataPoint(
-    groupId                        : String,
+    groupId: String,
     memberName: String,
-    genome                         : String,
-    environment                    : Set[String],
-    maslowian                      : List[Double]
+    phenome: String,
+    maslowian: Map[String,Double]
   )
 
   case class DataAggregate(
-    actorDataPoints : Seq[ActorDataPoint],
+    actorDataPoints: Seq[ActorDataPoint],
     actorRawDataPoints: Seq[ActorRawDataPoint],
     groupDataPoints: Seq[GroupDataPoint]
   )
@@ -46,10 +40,13 @@ class DataAggregatorActor(analytics: ActorRef, assigned: Int) extends Actor with
     case dataPoint: ActorDataPoint =>
       actorDataPoints = actorDataPoints :+ dataPoint
     case dataPoint: ActorRawDataPoint =>
-      actorRawDataPoints = actorRawDataPoints :+ dataPoint
+      actorRawDataPoints = actorRawDataPoints :+ ActorRawDataPoint(dataPoint.groupId, dataPoint
+        .memberName, dataPoint.attunementDecisionParams, dataPoint.memberExpression.mkString
+        .concat(""))
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
-      if (groupDataPoints.size == assigned)
+      if (groupDataPoints.size == assigned) {
         analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)
+      }
   }
 }
