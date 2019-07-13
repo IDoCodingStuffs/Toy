@@ -1,7 +1,7 @@
-package net.codingstuffs.abilene.intake.parse
+package net.codingstuffs.toy.intake.parse
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.codingstuffs.abilene.simulation.generators.random.{Beta, Discrete, FoldedGaussian,
+import net.codingstuffs.toy.iteration.generators.random.{Beta, Discrete, FoldedGaussian,
   Uniform}
 
 import scala.util.Random

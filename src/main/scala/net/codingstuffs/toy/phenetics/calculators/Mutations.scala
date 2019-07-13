@@ -1,4 +1,4 @@
-package net.codingstuffs.abilene.simulation.agent.phenetics.calculators
+package net.codingstuffs.toy.phenetics.calculators
 
 import com.typesafe.config.{Config, ConfigFactory}
 

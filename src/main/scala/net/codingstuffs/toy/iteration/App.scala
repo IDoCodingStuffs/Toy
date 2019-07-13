@@ -1,18 +1,17 @@
-package net.codingstuffs.abilene.simulation
+package net.codingstuffs.toy.iteration
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
-import net.codingstuffs.abilene.intake.parse.ConfigUtil._
-import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
+import net.codingstuffs.toy.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
+import net.codingstuffs.toy.iteration.agent.{Agent, ConductorActor}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
 
-object Abilene extends App {
+object App extends App {
 
-  import Member._
+  import Agent._
 
   val config = ConfigFactory.load()
   System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
@@ -25,11 +24,6 @@ object Abilene extends App {
   private val random = new Random(config.getLong("generator.seed.main"))
 
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
-
-  val studyModel = config.getString("agent.behavior.model") match {
-    case "Simplified" => SimpleAgent
-    case "Maslowian" => MaslowianAgent
-  }
 
   val system: ActorSystem = ActorSystem("Abilene")
   val analytics = system.actorOf(AnalyticsGenerationActor.props, "AnalyticsGenerator")
@@ -47,14 +41,14 @@ object Abilene extends App {
 
     var memberAgents: List[ActorRef] = List()
 
-    val group = system.actorOf(Group.props(1.to(groupSize).toList,
+    val group = system.actorOf(ConductorActor.props(1.to(groupSize).toList,
       aggregators((groupId % aggregatorCount).toInt)),
       s"$groupId")
     val groupMembers = 1.to(groupSize).toSet
     groupMembers.foreach(index => {
       memberAgents = memberAgents :+ system.actorOf(
-        Member.props(
-          group, studyModel, groupMembers, random.nextLong
+        Agent.props(
+          group, groupMembers, random.nextLong
         ),
         s"$groupId@@@$index")
     }

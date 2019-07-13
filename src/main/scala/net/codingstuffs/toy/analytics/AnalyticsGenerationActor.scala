@@ -1,10 +1,10 @@
-package net.codingstuffs.abilene.analytics
+package net.codingstuffs.toy.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
-import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
-import net.codingstuffs.abilene.simulation.agent.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.toy.iteration.agent.ConductorActor.GroupDataPoint
+import net.codingstuffs.toy.phenetics.AgentPheneticsGenerator
 import org.apache.spark.sql.SparkSession
 
 object AnalyticsGenerationActor {
@@ -44,8 +44,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         self ! Generate
 
     case Generate =>
-      import sparkSession.implicits._
       import org.apache.spark.sql.functions._
+      import sparkSession.implicits._
 
       val memberStats = actorDataPoints.distinct.toDF
       val memberPreferenceStats = actorRawDataPoints.distinct.toDF

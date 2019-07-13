@@ -1,7 +1,7 @@
-package net.codingstuffs.abilene.simulation.agent.phenetics
+package net.codingstuffs.toy.phenetics
 
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.intake.parse.ConfigUtil
+import net.codingstuffs.toy.intake.parse.ConfigUtil
 
 import scala.util.Random
 

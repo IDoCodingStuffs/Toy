@@ -1,12 +1,9 @@
-package net.codingstuffs.abilene.analytics
+package net.codingstuffs.toy.analytics
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{
-  ActorDataPoint, ActorRawDataPoint,
-  DataAggregate
-}
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
-import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
+import net.codingstuffs.toy.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.toy.iteration.agent.ConductorActor.GroupDataPoint
+import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
 
 object DataAggregatorActor {
   def props(

@@ -1,7 +1,6 @@
-package net.codingstuffs.abilene.simulation.agent.phenetics.calculators
+package net.codingstuffs.toy.phenetics.calculators
 
-import net.codingstuffs.abilene.intake.parse.ConfigUtil
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
 
 import scala.util.Random
 

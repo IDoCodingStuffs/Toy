@@ -1,8 +1,6 @@
-package net.codingstuffs.abilene.simulation.agent
+package net.codingstuffs.toy.iteration.agent.providers
 
-
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
-import net.codingstuffs.abilene.simulation.agent.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.phenetics.AgentPheneticsGenerator
 
 import scala.util.Random
 
@@ -16,7 +14,7 @@ object AgentParamGenerator {
 
 }
 
-class AgentParamGenerator(studyModel: AgentBehaviorModel,
+class AgentParamGenerator(
   randomGenerators: (Random, Random),
   memberIndices: Set[Int],
   groupId                           : String) {

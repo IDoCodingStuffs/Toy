@@ -1,6 +1,6 @@
-package net.codingstuffs.abilene.simulation.generators.random
+package net.codingstuffs.toy.iteration.generators.random
 
-import net.codingstuffs.abilene.intake.parse.ConfigUtil
+import net.codingstuffs.toy.intake.parse.ConfigUtil
 import org.apache.commons.math3.distribution.BetaDistribution
 
 import scala.util.Random

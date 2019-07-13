@@ -1,4 +1,4 @@
-package net.codingstuffs.abilene.simulation.agent.maslowian
+package net.codingstuffs.toy.iteration.agent.providers
 
 import com.typesafe.config.ConfigFactory
 

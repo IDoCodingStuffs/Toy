@@ -1,20 +1,20 @@
-package net.codingstuffs.abilene.simulation
+package net.codingstuffs.toy.iteration.agent
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
-import net.codingstuffs.abilene.simulation.Abilene.system
-import net.codingstuffs.abilene.simulation.Member.Declare
-import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
+import net.codingstuffs.toy.iteration.App.system
+import net.codingstuffs.toy.iteration.agent.Agent.Declare
+import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
-object Group {
-  def props: Props = Props[Group]
+object ConductorActor {
+  def props: Props = Props[ConductorActor]
 
   def props(members: Seq[Int],
-    dataDumpGenerator: ActorRef): Props = Props(new Group(members, dataDumpGenerator))
+    dataDumpGenerator: ActorRef): Props = Props(new ConductorActor(members, dataDumpGenerator))
 
   case class DataPoint(
     declare                   : Declare,
@@ -28,9 +28,9 @@ object Group {
 
 }
 
-class Group(members: Seq[Int], dataAggregator: ActorRef) extends Actor with ActorLogging {
+class ConductorActor(members: Seq[Int], dataAggregator: ActorRef) extends Actor with ActorLogging {
 
-  import Group._
+  import ConductorActor._
 
   // implicit ExecutionContext should be in scope
   implicit val ec: ExecutionContext = context.dispatcher
