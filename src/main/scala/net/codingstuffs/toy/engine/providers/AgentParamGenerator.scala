@@ -49,9 +49,7 @@ class AgentParamGenerator(
     groupMembers.filter(member => member != agentName.toInt)
       .map(member => member -> agentGenes(member)).toMap
 
-  def groupWeights(implicit groupMembers: Set[Int],
-    //!TODO: REMOVE HARDCODED VAL HERE DAFUQ
-    max_deviation                       : Int = 3): Map[Int, Double] =
+  def groupWeights(implicit groupMembers: Set[Int]): Map[Int, Double] =
     groupMembers.filter(member => member != agentName.toInt).map(member => member -> weightsGenerator
       .nextDouble).toMap
 
