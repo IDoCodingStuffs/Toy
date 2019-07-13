@@ -66,7 +66,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       fullAggregate.groupBy($"memberExpression").count()
         .join(geneticsStats,
         $"memberExpression" === $"pattern", "left_outer")
-        .select("pattern", "utility", "count")
+        .select("memberExpression", "utility", "count")
+        .orderBy(desc("utility"))
         .show()
   }
 }
