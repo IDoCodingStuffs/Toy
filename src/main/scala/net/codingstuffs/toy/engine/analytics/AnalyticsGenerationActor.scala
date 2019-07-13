@@ -39,9 +39,6 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
       aggregatesReceived += 1
 
-      if (aggregatesReceived == config.getInt("data.aggregator.count"))
-        self ! Generate
-
     case Generate =>
       import sparkSession.implicits._
       import org.apache.spark.sql.functions._

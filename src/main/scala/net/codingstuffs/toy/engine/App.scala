@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import net.codingstuffs.toy.engine.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
 import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
+import net.codingstuffs.toy.engine.iteration.IterationInstantiator
 import net.codingstuffs.toy.engine.providers.InstanceGenerator
 import net.codingstuffs.toy.engine.providers.InstanceGenerator.GenerationParams
 
@@ -18,10 +19,11 @@ object App extends App {
   private implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
   val analytics = system.actorOf(AnalyticsGenerationActor.props, "AnalyticsGenerator")
+  val ticker = system.actorOf(IterationInstantiator.props(system), "IterationManager")
 
   val dataAggregators: List[ActorRef] = 1.to(ConfigUtil.AGGREGATOR_COUNT)
     .map(index =>
-      system.actorOf(DataAggregatorActor.props(analytics, ConfigUtil.EXTRA_ITERATIONS / ConfigUtil.AGGREGATOR_COUNT),
+      system.actorOf(DataAggregatorActor.props(analytics, ticker, ConfigUtil.EXTRA_ITERATIONS / ConfigUtil.AGGREGATOR_COUNT),
         name = s"DataAggregator$index")
     ).toList
 

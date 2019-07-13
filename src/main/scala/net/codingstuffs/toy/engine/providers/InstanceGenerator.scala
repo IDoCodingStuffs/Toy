@@ -2,12 +2,10 @@ package net.codingstuffs.toy.engine.providers
 
 import akka.actor.{ActorRef, ActorSystem}
 import net.codingstuffs.toy.engine.agent.{Agent, AgentConductor}
-import net.codingstuffs.toy.engine.agent.Agent.{AgentParams, Declare}
+import net.codingstuffs.toy.engine.agent.Agent.Declare
 import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
-import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
 import net.codingstuffs.toy.engine.providers.InstanceGenerator.GenerationParams
 import net.codingstuffs.toy.engine.providers.param.AgentParamInitializer
-import net.codingstuffs.toy.engine.providers.random_generators.FoldedGaussian
 
 import scala.util.Random
 
