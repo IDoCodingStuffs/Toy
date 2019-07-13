@@ -7,6 +7,7 @@ import net.codingstuffs.abilene.analytics.{AnalyticsGenerationActor, DataAggrega
 import net.codingstuffs.abilene.intake.parse.ConfigUtil
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
+import net.codingstuffs.abilene.simulation.generators.random.Central
 import org.joda.time.LocalDateTime
 
 import scala.concurrent.duration.FiniteDuration
@@ -23,11 +24,6 @@ object Abilene extends App {
   val groupMax = config.getInt("group.size.max")
   val groupMin = config.getInt("group.size.min")
   val aggregatorCount = config.getInt("data.aggregator.count")
-
-  val random = new Random
-  random.setSeed(ConfigUtil.GROUP_GENERATOR_SEED)
-  PREFERENCE_GENERATOR.setSeed(ConfigUtil.MAIN_GENERATOR_SEED)
-  WEIGHTS_GENERATOR.setSeed(ConfigUtil.MAIN_GENERATOR_SEED)
 
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
@@ -48,8 +44,8 @@ object Abilene extends App {
   )
 
   def initGroup(aggregators: List[ActorRef]): Unit = {
-    val groupId = math.abs(random.nextLong())
-    val groupSize = groupMin + random.nextInt(groupMax - groupMin)
+    val groupId = math.abs(Central.GENERATOR.nextLong())
+    val groupSize = groupMin + Central.GENERATOR.nextInt(groupMax - groupMin)
 
     var memberAgents: List[ActorRef] = List()
 

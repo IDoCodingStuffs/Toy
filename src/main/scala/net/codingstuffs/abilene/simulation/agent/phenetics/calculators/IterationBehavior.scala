@@ -2,15 +2,11 @@ package net.codingstuffs.abilene.simulation.agent.phenetics.calculators
 
 import net.codingstuffs.abilene.intake.parse.ConfigUtil
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
-
-import scala.util.Random
+import net.codingstuffs.abilene.simulation.generators.random.Central
 
 object IterationBehavior {
-  private val random  = Random
-  random.setSeed(ConfigUtil.BEHAVIOR_GENERATOR_SEED)
-
   def pickMutatedSelfOrAttune(mutatedPhenome: (String, Int), initialPhenome: String, params: ExpressionParams): String = {
-    if (random.nextDouble() <= params.selfParams._3 / params.groupWeights.values.sum) mutatedPhenome._1
+    if (Central.GENERATOR.nextDouble() <= params.selfParams._3 / params.groupWeights.values.sum) mutatedPhenome._1
     else {
       val preferences = params.groupWeights.map(item =>
         params.groupWeights.values.filter(subitem => subitem == item._2).sum ->
@@ -21,7 +17,7 @@ object IterationBehavior {
       val pickPossibilities = normalizedPref(probabilisticPick(normalizedPref.keySet.toList.sorted))
 
       val pick = params.groupExpressions(
-        pickPossibilities.toVector(random.nextInt(pickPossibilities.size)))
+        pickPossibilities.toVector(Central.GENERATOR.nextInt(pickPossibilities.size)))
 
       //!TODO: Attunement happens at the mutated loc
       Mutations.attune(mutatedPhenome, pick)
@@ -30,7 +26,7 @@ object IterationBehavior {
 
   //!TODO: Refactor?
   def probabilisticPick(myList: List[Double]): Double = {
-    val roll = random.nextDouble()
+    val roll = Central.GENERATOR.nextDouble()
     var sum = 0.0
 
     myList.indices.foreach( index =>
