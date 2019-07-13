@@ -4,11 +4,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.abilene.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
-import net.codingstuffs.abilene.intake.parse.ConfigUtil
 import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.agent.{MaslowianAgent, SimpleAgent}
-import net.codingstuffs.abilene.simulation.generators.random.Central
-import org.joda.time.LocalDateTime
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
@@ -24,6 +21,8 @@ object Abilene extends App {
   val groupMax = config.getInt("group.size.max")
   val groupMin = config.getInt("group.size.min")
   val aggregatorCount = config.getInt("data.aggregator.count")
+
+  private val random = new Random(config.getLong("generator.seed.main"))
 
   implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
@@ -44,8 +43,8 @@ object Abilene extends App {
   )
 
   def initGroup(aggregators: List[ActorRef]): Unit = {
-    val groupId = math.abs(Central.GENERATOR.nextLong())
-    val groupSize = groupMin + Central.GENERATOR.nextInt(groupMax - groupMin)
+    val groupId = System.nanoTime()
+    val groupSize = groupMin + random.nextInt(groupMax - groupMin)
 
     var memberAgents: List[ActorRef] = List()
 
@@ -56,8 +55,7 @@ object Abilene extends App {
     groupMembers.foreach(index => {
       memberAgents = memberAgents :+ system.actorOf(
         Member.props(
-          group, studyModel, groupMembers,
-          (PREFERENCE_GENERATOR, WEIGHTS_GENERATOR)
+          group, studyModel, groupMembers, random.nextLong
         ),
         s"$groupId@@@$index")
     }

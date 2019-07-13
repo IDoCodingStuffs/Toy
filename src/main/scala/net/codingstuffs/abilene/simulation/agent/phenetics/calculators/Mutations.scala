@@ -1,8 +1,6 @@
 package net.codingstuffs.abilene.simulation.agent.phenetics.calculators
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.codingstuffs.abilene.intake.parse.ConfigUtil
-import net.codingstuffs.abilene.simulation.generators.random.Central
 
 import scala.util.Random
 
@@ -15,22 +13,21 @@ object Mutations {
       if (index < phenome_1._2 - attunementHalf || index > phenome_1._2 + attunementHalf)
         phenome_1._1.charAt(index)
       else phenome_2.charAt(index)).mkString
-
   }
 
-  def randomCrossover(phenome_1: String, phenome_2: String): (String, String) = {
+  def randomCrossover(phenome_1: String, phenome_2: String, random: Random): (String, String) = {
     val pairedChars = 0.until(phenome_1.length).map(index =>
-      if (Central.GENERATOR.nextBoolean) (phenome_1.charAt(index), phenome_2.charAt(index))
+      if (random.nextBoolean) (phenome_1.charAt(index), phenome_2.charAt(index))
       else (phenome_2.charAt(index), phenome_1.charAt(index)))
     (pairedChars.map(item => item._1).mkString, pairedChars.map(item => item._2).mkString)
   }
 
-  def mutate(phenome: String): (String, Int) = {
-    val mutationStrength = Central.GENERATOR.nextInt(config.getInt("agent.phenome.mutation.strength")) + 1
-    val location = Central.GENERATOR.nextInt(phenome.length)
+  def mutate(phenome: String, random: Random): (String, Int) = {
+    val mutationStrength = random.nextInt(config.getInt("agent.phenome.mutation.strength")) + 1
+    val location = random.nextInt(phenome.length)
     (phenome.substring(0, location) +
-      (phenome.charAt(location).toInt + Central.GENERATOR.nextInt(mutationStrength) *
-        (if (Central.GENERATOR.nextBoolean) -1 else 1)).toChar +
+      (phenome.charAt(location).toInt + random.nextInt(mutationStrength) *
+        (if (random.nextBoolean) -1 else 1)).toChar +
       phenome.substring(location + 1), location)
   }
 }

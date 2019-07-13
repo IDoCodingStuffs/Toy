@@ -6,7 +6,8 @@ import net.codingstuffs.abilene.intake.parse.ConfigUtil._
 import net.codingstuffs.abilene.simulation.agent._
 import net.codingstuffs.abilene.simulation.agent.AgentParamGenerator.ExpressionParams
 import net.codingstuffs.abilene.simulation.agent.maslowian.MaslowianParamGenerator
-import net.codingstuffs.abilene.simulation.agent.phenetics.calculators.{IterationBehavior, Mutations}
+import net.codingstuffs.abilene.simulation.agent.phenetics.calculators.{IterationBehavior,
+  Mutations}
 import net.codingstuffs.abilene.simulation.agent.phenetics.AgentPheneticsGenerator
 import net.codingstuffs.abilene.simulation.generators.random.FoldedGaussian
 import net.codingstuffs.abilene.simulation.Group.DataPoint
@@ -14,37 +15,40 @@ import net.codingstuffs.abilene.simulation.Group.DataPoint
 import scala.util.Random
 
 object Member {
-  def props(group  : ActorRef,
-    behaviorModel  : AgentBehaviorModel,
-    groupIndices   : Set[Int],
-    randomGenerator: (Random, Random)): Props =
-    Props(new Member(group, behaviorModel, groupIndices, randomGenerator))
+  def props(group: ActorRef,
+    behaviorModel: AgentBehaviorModel,
+    groupIndices : Set[Int],
+    randomSeed   : Long): Props =
+    Props(new Member(group, behaviorModel, groupIndices, randomSeed))
 
   final case class ReceiveDecision(member: Int,
-    expression: String)
+    expression                           : String)
 
   final case class Declare(expression: String)
 
 }
 
 class Member(group: ActorRef,
-  behaviorModel   : AgentBehaviorModel,
-  groupIndices    : Set[Int],
-  randomGenerators: (Random, Random))
+  behaviorModel: AgentBehaviorModel,
+  groupIndices: Set[Int],
+  randomSeed: Long)
   extends Actor with ActorLogging {
 
   import Member._
 
   private val config = ConfigFactory.load
+  private val random = new Random(randomSeed)
 
   private val name = self.path.name.split("@@@")(1)
   private val agentParamGenerator: AgentParamGenerator =
-    new AgentParamGenerator(behaviorModel, randomGenerators, groupIndices, group.path.name)
+    new AgentParamGenerator(behaviorModel,
+      (new Random(random.nextLong), new Random(random.nextLong)),
+      groupIndices, group.path.name)
   agentParamGenerator.self = name
 
   private val initialParams: ExpressionParams = agentParamGenerator.get
   private val initialPhenome = initialParams.selfParams._2
-  private val mutatedPhenome = Mutations.mutate(initialPhenome)
+  private val mutatedPhenome = Mutations.mutate(initialPhenome, new Random(random.nextLong))
 
   private val knownExpressions = initialParams.groupExpressions
 
@@ -92,8 +96,12 @@ class Member(group: ActorRef,
         .groupWeights)
       val state = (initialPhenome, maslowianParams)
       group ! DataPoint(
-        Declare(IterationBehavior
-          .pickMutatedSelfOrAttune(mutatedPhenome, initialPhenome, param)),
-        param, state)
+        Declare(IterationBehavior.pickMutatedSelfOrAttune(
+            mutatedPhenome,
+            initialPhenome,
+            param,
+            new Random(random.nextLong))),
+        param,
+        state)
   }
 }
