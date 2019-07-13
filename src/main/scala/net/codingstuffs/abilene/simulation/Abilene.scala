@@ -35,14 +35,13 @@ object Abilene extends App {
   val analytics = system.actorOf(AnalyticsGenerationActor.props, "AnalyticsGenerator")
   var dataAggregators: List[ActorRef] = List()
 
-  //Init data aggregators
-  1.to(aggregatorCount).foreach(
+  def initAggregators(): Unit = 1.to(aggregatorCount).foreach(
     index => dataAggregators = dataAggregators :+
       system.actorOf(DataAggregatorActor.props(analytics, extraIterations / aggregatorCount),
         s"DataAggregator$index")
   )
 
-  def initGroup(aggregators: List[ActorRef]): Unit = {
+  def initSingleGroupInstance(aggregators: List[ActorRef]): Unit = {
     val groupId = System.nanoTime()
     val groupSize = groupMin + random.nextInt(groupMax - groupMin)
 
@@ -64,5 +63,10 @@ object Abilene extends App {
     system.actorSelection(s"/user/$groupId@@@1*") ! Declare
   }
 
-  1.to(extraIterations).foreach(_ => initGroup(dataAggregators))
+  def initIteration(): Unit = {
+    initAggregators()
+    1.to(extraIterations).foreach(_ => initSingleGroupInstance(dataAggregators))
+  }
+
+  initIteration()
 }
