@@ -36,9 +36,11 @@ class InstanceGenerator(params: GenerationParams) {
       s"$groupId")
     val groupMembers = 1.to(groupSize).toSet
     groupMembers.foreach(index => {
+      val generator = new AgentParamGenerator(groupId.toString, groupMembers, index.toString,
+        (new Random(random.nextLong()), new Random(random.nextLong())), random.nextLong())
       memberAgents = memberAgents :+ system.actorOf(
         Agent.props(
-          group, groupMembers, random.nextLong
+          group, groupMembers, generator
         ),
         s"$groupId@@@$index")
     }

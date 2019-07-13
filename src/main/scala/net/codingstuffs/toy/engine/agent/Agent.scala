@@ -15,8 +15,8 @@ import scala.util.Random
 object Agent {
   def props(group: ActorRef,
     groupIndices: Set[Int],
-    randomSeed: Long): Props =
-    Props(new Agent(group, groupIndices, randomSeed))
+    params: AgentParamGenerator): Props =
+    Props(new Agent(group, groupIndices, params))
 
   final case class ReceiveDecision(member: Int,
     expression: String)
@@ -25,56 +25,17 @@ object Agent {
 
 }
 
-class Agent(group: ActorRef,
+class Agent(
+  group: ActorRef,
   groupIndices: Set[Int],
-  randomSeed: Long)
+  generator: AgentParamGenerator)
   extends Actor with ActorLogging {
 
   import Agent._
 
-  private val config = ConfigFactory.load
-  private val random = new Random(randomSeed)
-
   private val name = self.path.name.split("@@@")(1)
-  private val agentParamGenerator: AgentParamGenerator =
-    new AgentParamGenerator(
-      (new Random(random.nextLong), new Random(random.nextLong)),
-      groupIndices, group.path.name)
-  agentParamGenerator.self = name
-
-  private val initialParams: ExpressionParams = agentParamGenerator.get
-  private val initialPhenome = initialParams.selfParams._2
-  private val mutatedPhenome = Mutations.mutate(initialPhenome, new Random(random.nextLong))
-
-  private val knownExpressions = initialParams.groupExpressions
-
-  private val maslowianParams = ConfigUtil.MASLOWIAN_MEAN_SD.map(
-    mapping => mapping._1 -> FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
-  )
-
-  private val adjustedParams: ExpressionParams = {
-    val adjustedForSelf = ExpressionParams(
-      (initialParams.selfParams._1, mutatedPhenome._1,
-        //!TODO: Refactor into its own method in a util
-        if (AgentPheneticsGenerator.GENE_SET.contains(mutatedPhenome._1))
-          initialParams.selfParams._3 * AgentPheneticsGenerator.GENE_SET(mutatedPhenome._1)
-        else config.getDouble("agent.phenome.base_utility")),
-
-      initialParams.groupExpressions,
-      initialParams.groupWeights
-    )
-
-    //!TODO : Move this to member param generation
-    val maslowianGenerator = new MaslowianParamGenerator(maslowianParams)
-
-    ExpressionParams(
-      (adjustedForSelf.selfParams._1, adjustedForSelf.selfParams._2, adjustedForSelf
-        .selfParams._3),
-      adjustedForSelf.groupExpressions,
-      adjustedForSelf.groupWeights.map(weight =>
-        weight._1 -> (1 / maslowianGenerator.getMaslowianSum(name)) * weight._2))
-
-  }
+  private val params = generator.adjustedParams
+  private val knownExpressions = params.groupExpressions
 
   override def receive: Receive = onMessage(knownExpressions)
 
@@ -82,16 +43,18 @@ class Agent(group: ActorRef,
     case message: ReceiveDecision =>
       context.become(onMessage(knownGroupPatterns + (message.member -> message.expression)))
     case Declare =>
-      val param = ExpressionParams(adjustedParams.selfParams, knownGroupPatterns, adjustedParams
+      val param = ExpressionParams(params.selfParams, knownGroupPatterns, params
         .groupWeights)
-      val state = (initialPhenome, maslowianParams)
+      val state = (generator.initialPhenome, generator.maslowianParams)
       group ! DataPoint(
         Declare(IterationBehavior.pickMutatedSelfOrAttune(
-          mutatedPhenome,
-          initialPhenome,
+          generator.mutatedPhenome,
+          generator.initialPhenome,
           param,
-          new Random(random.nextLong))),
+          new Random(generator.preferenceGenerator.nextLong))),
         param,
         state)
+      //!TODO: Make cleanup more graceful
+      context.stop(self)
   }
 }

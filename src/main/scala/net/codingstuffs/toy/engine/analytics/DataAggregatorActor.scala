@@ -47,6 +47,9 @@ class DataAggregatorActor(analytics: ActorRef, assigned: Int) extends Actor with
       groupDataPoints = groupDataPoints :+ dataPoint
       if (groupDataPoints.size == assigned) {
         analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)
+        actorDataPoints = Seq()
+        actorRawDataPoints = Seq()
+        groupDataPoints = Seq()
       }
   }
 }

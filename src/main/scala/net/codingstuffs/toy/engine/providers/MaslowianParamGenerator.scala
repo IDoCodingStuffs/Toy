@@ -14,19 +14,19 @@ class MaslowianParamGenerator(listAttr: Map[String, Double]) {
   Contemporary Extensions Built Upon Ancient Foundations.
   Perspect Psychol Sci. 2010;5(3):292–314. doi:10.1177/1745691610369469
  */
-  def getParams(name: String): Map[String, Double] = listAttr
+  def getParams: Map[String, Double] = listAttr
 
-  def getMaslowianSum(name: String): Double = {
+  def getMaslowianSum: Double = {
     //!TODO: Customizable Maslowians?
     val exponents = config.getDoubleList("maslowian.exponents")
     val defMulti = math.pow(10, config.getDouble("maslowian.multiplier.power_of_ten"))
 
-    val physio = math.pow(getParams(name)("physio"), exponents.get(0)) * defMulti
-    val safety = math.pow(getParams(name)("safety"), exponents.get(1)) * defMulti
-    val affiliation = math.pow(getParams(name)("affiliation"), exponents.get(2)) * defMulti
-    val mate_acquisition = math.pow(getParams(name)("mate_acquisition"), exponents.get(3)) * defMulti
-    val mate_retention = math.pow(getParams(name)("mate_retention"), exponents.get(4)) * defMulti
-    val parenting = math.pow(getParams(name)("parenting"), exponents.get(5)) * defMulti
+    val physio = math.pow(getParams("physio"), exponents.get(0)) * defMulti
+    val safety = math.pow(getParams("safety"), exponents.get(1)) * defMulti
+    val affiliation = math.pow(getParams("affiliation"), exponents.get(2)) * defMulti
+    val mate_acquisition = math.pow(getParams("mate_acquisition"), exponents.get(3)) * defMulti
+    val mate_retention = math.pow(getParams("mate_retention"), exponents.get(4)) * defMulti
+    val parenting = math.pow(getParams("parenting"), exponents.get(5)) * defMulti
 
     physio +
     physio * safety +

@@ -5,6 +5,8 @@ import com.typesafe.config.ConfigFactory
 import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
 import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
 import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.engine.App
+import net.codingstuffs.toy.engine.agent.Agent.Declare
 import org.apache.spark.sql.SparkSession
 
 object AnalyticsGenerationActor {
@@ -62,6 +64,10 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
           "groupId"
         ),
         Seq("memberName", "groupId"))
+
+      actorDataPoints = Seq()
+      actorRawDataPoints = Seq()
+      groupDataPoints = Seq()
 
       fullAggregate.groupBy($"memberExpression").count()
         .join(geneticsStats,
