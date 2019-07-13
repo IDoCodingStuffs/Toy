@@ -2,15 +2,17 @@ package net.codingstuffs.abilene.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint,
-  DataAggregate}
+import net.codingstuffs.abilene.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
 import net.codingstuffs.abilene.simulation.Group.GroupDataPoint
+import net.codingstuffs.abilene.simulation.agent.phenetics.AgentPheneticsGenerator
 import org.apache.spark.sql.SparkSession
 
 object AnalyticsGenerationActor {
   def props: Props = Props[AnalyticsGenerationActor]
 
   case object Generate
+
+  case class GeneticsStat(pattern: String, utility: Double)
 
   var aggregatesReceived = 0
 }
@@ -49,6 +51,11 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       val memberPreferenceStats = actorRawDataPoints.distinct.toDF
       val groupDecisionStats = groupDataPoints.distinct.toDF
 
+      val geneticsStats = AgentPheneticsGenerator.GENE_SET
+        .map(item => GeneticsStat(item._1, item._2))
+        .toSeq
+        .toDF
+
       val fullAggregate = memberStats.join(
         memberPreferenceStats.join(
           groupDecisionStats,
@@ -57,10 +64,9 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         Seq("memberName", "groupId"))
 
       fullAggregate.groupBy($"memberExpression").count()
-//        .select(
-//          (sum("count") - max("count")) /
-//          sum("count")
-//            * 100 as "Retained Mutations %")
+        .join(geneticsStats,
+        $"memberExpression" === $"pattern", "left_outer")
+        .select("pattern", "utility", "count")
         .show()
   }
 }
