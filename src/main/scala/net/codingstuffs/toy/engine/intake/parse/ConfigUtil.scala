@@ -13,6 +13,8 @@ object ConfigUtil {
   final val GROUP_MAX = config.getInt("group.size.max")
   final val GROUP_MIN = config.getInt("group.size.min")
   final val AGGREGATOR_COUNT = config.getInt("data.aggregator.count")
+  final val BASE_UTIL = config.getDouble("agent.phenome.base_utility")
+  final val STANDARD_PHENE = config.getString("agent.phenome.standard")
 
   final val MAIN_GENERATOR_SEED = config.getLong("generator.seed.main")
   final val PREFERENCE_GENERATOR: Random = {
@@ -48,14 +50,13 @@ object ConfigUtil {
     }
   }
 
-  final val MASLOWIAN_MEAN_SD: Map[String, (Double, Double)] = {
+  final val MASLOWIAN_MEAN_SD: List[(Double, Double)] = {
     val means = config.getDoubleList("maslowian.means").toArray
     val sd = config.getDoubleList("maslowian.sd").toArray
 
     val labels = Seq("physio", "safety", "affiliation", "mate_acquisition", "mate_retention",
       "parenting")
 
-    labels.zipWithIndex.map(label => label._1 ->
-      (means(label._2).asInstanceOf[Double], sd(label._2).asInstanceOf[Double])).toMap
+    labels.zipWithIndex.map(label => (means(label._2).asInstanceOf[Double], sd(label._2).asInstanceOf[Double])).toList
   }
 }

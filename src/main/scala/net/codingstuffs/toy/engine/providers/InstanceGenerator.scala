@@ -2,9 +2,12 @@ package net.codingstuffs.toy.engine.providers
 
 import akka.actor.{ActorRef, ActorSystem}
 import net.codingstuffs.toy.engine.agent.{Agent, AgentConductor}
-import net.codingstuffs.toy.engine.agent.Agent.Declare
+import net.codingstuffs.toy.engine.agent.Agent.{AgentParams, Declare}
 import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
+import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
 import net.codingstuffs.toy.engine.providers.InstanceGenerator.GenerationParams
+import net.codingstuffs.toy.engine.providers.param.AgentParamInitializer
+import net.codingstuffs.toy.engine.providers.random_generators.FoldedGaussian
 
 import scala.util.Random
 
@@ -35,13 +38,17 @@ class InstanceGenerator(params: GenerationParams) {
       aggregators((groupId % ConfigUtil.AGGREGATOR_COUNT).toInt)),
       s"$groupId")
     val groupMembers = 1.to(groupSize).toSet
+
+    //!TODO: Externally prrovided phenomes
     groupMembers.foreach(index => {
-      val generator = new AgentParamGenerator(groupId.toString, groupMembers, index.toString,
-        (new Random(random.nextLong()), new Random(random.nextLong())), random.nextLong())
+      val generator = new AgentParamInitializer(
+        ConfigUtil.STANDARD_PHENE,
+        groupId.toString,
+        index,
+        groupMembers,
+        random.nextLong)
       memberAgents = memberAgents :+ system.actorOf(
-        Agent.props(
-          group, groupMembers, generator
-        ),
+        Agent.props(group, generator.adjustedParams, new Random(random.nextLong)),
         s"$groupId@@@$index")
     }
     )

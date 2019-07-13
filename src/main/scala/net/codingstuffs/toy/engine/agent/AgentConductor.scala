@@ -2,10 +2,8 @@ package net.codingstuffs.toy.engine.agent
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
-import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint}
 import net.codingstuffs.toy.engine.App.system
-import net.codingstuffs.toy.engine.agent.Agent.Declare
-import net.codingstuffs.toy.engine.providers.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.engine.agent.Agent.{AgentParams, Declare}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -18,14 +16,12 @@ object AgentConductor {
 
   case class DataPoint(
     declare                   : Declare,
-    memberParams              : ExpressionParams,
-    state                     : (String, Map[String, Double]))
+    params                    : AgentParams)
 
   case class GroupDataPoint(
     groupId: String,
     phenomeClusterCenter: Array[Int],
     distancePerMember: Array[Array[Int]])
-
 }
 
 class AgentConductor(members      : Seq[Int], dataAggregator: ActorRef)
@@ -43,16 +39,21 @@ class AgentConductor(members      : Seq[Int], dataAggregator: ActorRef)
   var memberExpressions: Map[Int, String] = Map()
 
   def receive: PartialFunction[Any, Unit] = {
-    case DataPoint(Declare(decision), params: ExpressionParams, state: (String,
-      Map[String, Double])) =>
+    case DataPoint(Declare(decision), params: AgentParams) =>
 
       val memberName = sender().path.name.split("@@@")(1)
-      memberExpressions += (memberName.toInt -> decision)
 
-      dataAggregator !
-        ActorDataPoint(groupId, memberName, state._1, state._2)
-      dataAggregator !
-        ActorRawDataPoint(groupId, memberName, params, decision)
+      memberExpressions += (memberName.toInt -> decision)
+      dataAggregator ! AgentParams(
+        decision,
+        params.group,
+        params.turnInGroup,
+        params.groupMembers,
+        params.groupWeights,
+        params.knownGroupPatterns,
+        params.maslowianParams
+      )
+
 
       system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
 

@@ -2,11 +2,10 @@ package net.codingstuffs.toy.engine.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
+import net.codingstuffs.toy.engine.agent.Agent.AgentParams
 import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
-import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.DataAggregate
 import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
-import net.codingstuffs.toy.engine.App
-import net.codingstuffs.toy.engine.agent.Agent.Declare
 import org.apache.spark.sql.SparkSession
 
 object AnalyticsGenerationActor {
@@ -30,14 +29,12 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
   import AnalyticsGenerationActor._
 
-  var actorDataPoints: Seq[ActorDataPoint] = Seq()
-  var actorRawDataPoints: Seq[ActorRawDataPoint] = Seq()
+  var actorDataPoints: Seq[AgentParams] = Seq()
   var groupDataPoints: Seq[GroupDataPoint] = Seq()
 
   override def receive: Receive = {
     case receipt: DataAggregate =>
       actorDataPoints = actorDataPoints ++ receipt.actorDataPoints
-      actorRawDataPoints = actorRawDataPoints ++ receipt.actorRawDataPoints
       groupDataPoints = groupDataPoints ++ receipt.groupDataPoints
 
       aggregatesReceived += 1
@@ -46,11 +43,10 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         self ! Generate
 
     case Generate =>
-      import org.apache.spark.sql.functions._
       import sparkSession.implicits._
+      import org.apache.spark.sql.functions._
 
       val memberStats = actorDataPoints.distinct.toDF
-      val memberPreferenceStats = actorRawDataPoints.distinct.toDF
       val groupDecisionStats = groupDataPoints.distinct.toDF
 
       val geneticsStats = AgentPheneticsGenerator.GENE_SET
@@ -58,21 +54,13 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         .toSeq
         .toDF
 
-      val fullAggregate = memberStats.join(
-        memberPreferenceStats.join(
-          groupDecisionStats,
-          "groupId"
-        ),
-        Seq("memberName", "groupId"))
-
       actorDataPoints = Seq()
-      actorRawDataPoints = Seq()
       groupDataPoints = Seq()
 
-      fullAggregate.groupBy($"memberExpression").count()
+      memberStats.groupBy($"phenome").count()
         .join(geneticsStats,
-          $"memberExpression" === $"pattern", "left_outer")
-        .select("memberExpression", "utility", "count")
+          $"phenome" === $"pattern", "left_outer")
+        .select("phenome", "utility", "count")
         .orderBy(desc("utility"))
         .show()
   }

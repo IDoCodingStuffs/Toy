@@ -1,9 +1,9 @@
 package net.codingstuffs.toy.engine.analytics
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import net.codingstuffs.toy.engine.agent.Agent.AgentParams
 import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
-import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
-import net.codingstuffs.toy.engine.providers.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.DataAggregate
 
 object DataAggregatorActor {
   def props(
@@ -11,44 +11,25 @@ object DataAggregatorActor {
     assigned: Int): Props =
     Props(new DataAggregatorActor(analyzer, assigned))
 
-  case class ActorRawDataPoint(groupId: String,
-    memberName: String,
-    attunementDecisionParams: ExpressionParams,
-    memberExpression: String)
-
-  case class ActorDataPoint(
-    groupId: String,
-    memberName: String,
-    phenome: String,
-    maslowian: Map[String, Double]
-  )
-
   case class DataAggregate(
-    actorDataPoints: Seq[ActorDataPoint],
-    actorRawDataPoints: Seq[ActorRawDataPoint],
+    actorDataPoints: Seq[AgentParams],
     groupDataPoints: Seq[GroupDataPoint]
   )
 
 }
 
 class DataAggregatorActor(analytics: ActorRef, assigned: Int) extends Actor with ActorLogging {
-  var actorDataPoints: Seq[ActorDataPoint] = Seq()
-  var actorRawDataPoints: Seq[ActorRawDataPoint] = Seq()
+  var actorDataPoints: Seq[AgentParams] = Seq()
   var groupDataPoints: Seq[GroupDataPoint] = Seq()
 
   override def receive: Receive = {
-    case dataPoint: ActorDataPoint =>
+    case dataPoint: AgentParams =>
       actorDataPoints = actorDataPoints :+ dataPoint
-    case dataPoint: ActorRawDataPoint =>
-      actorRawDataPoints = actorRawDataPoints :+ ActorRawDataPoint(dataPoint.groupId, dataPoint
-        .memberName, dataPoint.attunementDecisionParams, dataPoint.memberExpression.mkString
-        .concat(""))
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
       if (groupDataPoints.size == assigned) {
-        analytics ! DataAggregate(actorDataPoints, actorRawDataPoints, groupDataPoints)
+        analytics ! DataAggregate(actorDataPoints, groupDataPoints)
         actorDataPoints = Seq()
-        actorRawDataPoints = Seq()
         groupDataPoints = Seq()
       }
   }
