@@ -1,4 +1,4 @@
-package net.codingstuffs.toy.phenetics.calculators
+package net.codingstuffs.toy.engine.phenetics.calculators
 
 import com.typesafe.config.{Config, ConfigFactory}
 

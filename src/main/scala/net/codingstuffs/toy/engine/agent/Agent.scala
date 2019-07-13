@@ -1,21 +1,21 @@
-package net.codingstuffs.toy.iteration.agent
+package net.codingstuffs.toy.engine.agent
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.toy.intake.parse.ConfigUtil._
-import net.codingstuffs.toy.iteration.agent.providers.{AgentParamGenerator, MaslowianParamGenerator}
-import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
-import net.codingstuffs.toy.iteration.agent.ConductorActor.DataPoint
-import net.codingstuffs.toy.iteration.generators.random.FoldedGaussian
-import net.codingstuffs.toy.phenetics.calculators.{IterationBehavior, Mutations}
-import net.codingstuffs.toy.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.engine.agent.AgentConductor.DataPoint
+import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
+import net.codingstuffs.toy.engine.phenetics.calculators.{IterationBehavior, Mutations}
+import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.engine.providers.{AgentParamGenerator, MaslowianParamGenerator}
+import net.codingstuffs.toy.engine.providers.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.engine.providers.random_generators.FoldedGaussian
 
 import scala.util.Random
 
 object Agent {
   def props(group: ActorRef,
-    groupIndices : Set[Int],
-    randomSeed   : Long): Props =
+    groupIndices: Set[Int],
+    randomSeed: Long): Props =
     Props(new Agent(group, groupIndices, randomSeed))
 
   final case class ReceiveDecision(member: Int,
@@ -48,7 +48,7 @@ class Agent(group: ActorRef,
 
   private val knownExpressions = initialParams.groupExpressions
 
-  private val maslowianParams = MASLOWIAN_MEAN_SD.map(
+  private val maslowianParams = ConfigUtil.MASLOWIAN_MEAN_SD.map(
     mapping => mapping._1 -> FoldedGaussian.GENERATOR(mapping._2._1, mapping._2._2).nextDouble
   )
 
@@ -78,11 +78,11 @@ class Agent(group: ActorRef,
 
   override def receive: Receive = onMessage(knownExpressions)
 
-  private def onMessage(knownPreferences: Map[Int, String]): Receive = {
+  private def onMessage(knownGroupPatterns: Map[Int, String]): Receive = {
     case message: ReceiveDecision =>
-      context.become(onMessage(knownPreferences + (message.member -> message.expression)))
+      context.become(onMessage(knownGroupPatterns + (message.member -> message.expression)))
     case Declare =>
-      val param = ExpressionParams(adjustedParams.selfParams, knownPreferences, adjustedParams
+      val param = ExpressionParams(adjustedParams.selfParams, knownGroupPatterns, adjustedParams
         .groupWeights)
       val state = (initialPhenome, maslowianParams)
       group ! DataPoint(

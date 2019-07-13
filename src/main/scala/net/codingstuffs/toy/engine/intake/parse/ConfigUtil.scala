@@ -1,8 +1,7 @@
-package net.codingstuffs.toy.intake.parse
+package net.codingstuffs.toy.engine.intake.parse
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.codingstuffs.toy.iteration.generators.random.{Beta, Discrete, FoldedGaussian,
-  Uniform}
+import net.codingstuffs.toy.engine.providers.random_generators.{Beta, Discrete, FoldedGaussian, Uniform}
 
 import scala.util.Random
 

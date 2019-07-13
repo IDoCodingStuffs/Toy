@@ -1,7 +1,7 @@
-package net.codingstuffs.toy.phenetics
+package net.codingstuffs.toy.engine.phenetics
 
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.toy.intake.parse.ConfigUtil
+import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 
 import scala.util.Random
 

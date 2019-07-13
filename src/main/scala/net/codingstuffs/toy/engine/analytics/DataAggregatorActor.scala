@@ -1,14 +1,14 @@
-package net.codingstuffs.toy.analytics
+package net.codingstuffs.toy.engine.analytics
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import net.codingstuffs.toy.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
-import net.codingstuffs.toy.iteration.agent.ConductorActor.GroupDataPoint
-import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
+import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.toy.engine.providers.AgentParamGenerator.ExpressionParams
 
 object DataAggregatorActor {
   def props(
     analyzer: ActorRef,
-    assigned       : Int): Props =
+    assigned: Int): Props =
     Props(new DataAggregatorActor(analyzer, assigned))
 
   case class ActorRawDataPoint(groupId: String,
@@ -20,7 +20,7 @@ object DataAggregatorActor {
     groupId: String,
     memberName: String,
     phenome: String,
-    maslowian: Map[String,Double]
+    maslowian: Map[String, Double]
   )
 
   case class DataAggregate(

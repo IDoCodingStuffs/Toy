@@ -1,6 +1,6 @@
-package net.codingstuffs.toy.iteration.agent.providers
+package net.codingstuffs.toy.engine.providers
 
-import net.codingstuffs.toy.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
 
 import scala.util.Random
 
@@ -34,7 +34,6 @@ class AgentParamGenerator(
   def getSelfParams(name: String): (Int, String, Double) = (self.toInt, agentGenes(self.toInt),
     weightsGenerator.nextDouble())
 
-  //!TODO: Retrieve em
   def groupExpressions(implicit groupMembers: Set[Int]): Map[Int, String] =
     groupMembers.filter(member => member != self.toInt)
       .map(member => member -> agentGenes(member)).toMap

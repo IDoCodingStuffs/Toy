@@ -1,4 +1,4 @@
-package net.codingstuffs.toy.iteration.agent.providers
+package net.codingstuffs.toy.engine.providers
 
 import com.typesafe.config.ConfigFactory
 

@@ -1,14 +1,14 @@
-package net.codingstuffs.toy.phenetics.calculators
+package net.codingstuffs.toy.engine.phenetics.calculators
 
-import net.codingstuffs.toy.iteration.agent.providers.AgentParamGenerator.ExpressionParams
+import net.codingstuffs.toy.engine.providers.AgentParamGenerator.ExpressionParams
 
 import scala.util.Random
 
 object IterationBehavior {
   def pickMutatedSelfOrAttune(
-    mutatedPhenome                          : (String, Int),
-    initialPhenome                          : String,
-    params                                  : ExpressionParams,
+    mutatedPhenome: (String, Int),
+    initialPhenome: String,
+    params: ExpressionParams,
     random                                  : Random
   ): String = {
     if (
@@ -21,7 +21,8 @@ object IterationBehavior {
       )
 
       val normalizedPref = preferences.map(item => (item._1 / preferences.keySet.sum) -> item._2)
-      val pickPossibilities = normalizedPref(probabilisticPick(normalizedPref.keySet.toList.sorted, random))
+      val pickPossibilities = normalizedPref(probabilisticPick(normalizedPref.keySet.toList
+        .sorted, random))
 
       val pick = params.groupExpressions(
         pickPossibilities.toVector(random.nextInt(pickPossibilities.size)))

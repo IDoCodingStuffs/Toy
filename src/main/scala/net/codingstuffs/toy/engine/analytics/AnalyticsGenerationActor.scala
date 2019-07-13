@@ -1,10 +1,10 @@
-package net.codingstuffs.toy.analytics
+package net.codingstuffs.toy.engine.analytics
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
-import net.codingstuffs.toy.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
-import net.codingstuffs.toy.iteration.agent.ConductorActor.GroupDataPoint
-import net.codingstuffs.toy.phenetics.AgentPheneticsGenerator
+import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
+import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.{ActorDataPoint, ActorRawDataPoint, DataAggregate}
+import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
 import org.apache.spark.sql.SparkSession
 
 object AnalyticsGenerationActor {
@@ -65,7 +65,7 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
       fullAggregate.groupBy($"memberExpression").count()
         .join(geneticsStats,
-        $"memberExpression" === $"pattern", "left_outer")
+          $"memberExpression" === $"pattern", "left_outer")
         .select("memberExpression", "utility", "count")
         .orderBy(desc("utility"))
         .show()

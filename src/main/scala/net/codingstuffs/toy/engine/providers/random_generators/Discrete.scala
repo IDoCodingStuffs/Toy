@@ -1,6 +1,6 @@
-package net.codingstuffs.toy.iteration.generators.random
+package net.codingstuffs.toy.engine.providers.random_generators
 
-import net.codingstuffs.toy.intake.parse.ConfigUtil
+import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 
 import scala.util.Random
 
