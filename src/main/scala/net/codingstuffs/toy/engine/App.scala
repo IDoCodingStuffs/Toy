@@ -2,8 +2,8 @@ package net.codingstuffs.toy.engine
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import com.typesafe.config.ConfigFactory
 import net.codingstuffs.toy.engine.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
+import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 import net.codingstuffs.toy.engine.providers.InstanceGenerator
 import net.codingstuffs.toy.engine.providers.InstanceGenerator.GenerationParams
 
@@ -12,32 +12,21 @@ import scala.util.Random
 
 object App extends App {
 
-  val config = ConfigFactory.load()
-  System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
+  val system = ActorSystem("Abilene")
 
-  val extraIterations: Int = config.getInt("group.count")
-  val groupMax = config.getInt("group.size.max")
-  val groupMin = config.getInt("group.size.min")
-  val aggregatorCount = config.getInt("data.aggregator.count")
+  private val random = new Random(ConfigUtil.MAIN_GENERATOR_SEED)
+  private implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
 
-  private val random = new Random(config.getLong("generator.seed.main"))
-  implicit val timeout: Timeout = Timeout(FiniteDuration.apply(5, "seconds"))
+  val analytics = system.actorOf(AnalyticsGenerationActor.props, "AnalyticsGenerator")
 
-  val system: ActorSystem = ActorSystem("Abilene")
-  val analytics =
-    system.actorOf(AnalyticsGenerationActor.props, "AnalyticsGenerator")
-  val dataAggregators: List[ActorRef] =
-    1.to(aggregatorCount).map(
-      index => system.actorOf(DataAggregatorActor.props(analytics, extraIterations /
-        aggregatorCount),
-        s"DataAggregator$index")
+  val dataAggregators: List[ActorRef] = 1.to(ConfigUtil.AGGREGATOR_COUNT)
+    .map(index =>
+      system.actorOf(DataAggregatorActor.props(analytics, ConfigUtil.EXTRA_ITERATIONS / ConfigUtil.AGGREGATOR_COUNT),
+        name = s"DataAggregator$index")
     ).toList
 
   new InstanceGenerator(
-      GenerationParams(aggregatorCount,
-        extraIterations,
-        groupMax,
-        groupMin,
+      GenerationParams(
         random,
         analytics,
         dataAggregators,

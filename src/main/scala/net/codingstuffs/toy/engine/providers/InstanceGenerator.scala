@@ -1,39 +1,38 @@
 package net.codingstuffs.toy.engine.providers
 
 import akka.actor.{ActorRef, ActorSystem}
-import net.codingstuffs.toy.engine.analytics.DataAggregatorActor
 import net.codingstuffs.toy.engine.agent.{Agent, AgentConductor}
 import net.codingstuffs.toy.engine.agent.Agent.Declare
+import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 import net.codingstuffs.toy.engine.providers.InstanceGenerator.GenerationParams
-import org.springframework.stereotype.Component
 
 import scala.util.Random
 
 
 object InstanceGenerator {
+
   case class GenerationParams(
-    aggregatorCount: Int,
-    extraIterations: Int,
-    groupMax: Int,
-    groupMin: Int,
     random: Random,
     analytics: ActorRef,
     dataAggregators: List[ActorRef],
     system: ActorSystem
   )
+
 }
 
 class InstanceGenerator(params: GenerationParams) {
+
   import params._
 
   def initSingleGroupInstance(aggregators: List[ActorRef]): Unit = {
     val groupId = System.nanoTime()
-    val groupSize = groupMin + random.nextInt(groupMax - groupMin)
+    val groupSize = ConfigUtil.GROUP_MIN +
+      random.nextInt(ConfigUtil.GROUP_MAX - ConfigUtil.GROUP_MIN)
 
     var memberAgents: List[ActorRef] = List()
 
     val group = system.actorOf(AgentConductor.props(1.to(groupSize).toList,
-      aggregators((groupId % aggregatorCount).toInt)),
+      aggregators((groupId % ConfigUtil.AGGREGATOR_COUNT).toInt)),
       s"$groupId")
     val groupMembers = 1.to(groupSize).toSet
     groupMembers.foreach(index => {
@@ -49,6 +48,6 @@ class InstanceGenerator(params: GenerationParams) {
   }
 
   def initIteration(): Unit = {
-    1.to(extraIterations).foreach(_ => initSingleGroupInstance(dataAggregators))
+    1.to(ConfigUtil.EXTRA_ITERATIONS).foreach(_ => initSingleGroupInstance(dataAggregators))
   }
 }

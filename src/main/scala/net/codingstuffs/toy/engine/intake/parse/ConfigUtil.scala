@@ -7,9 +7,14 @@ import scala.util.Random
 
 object ConfigUtil {
   val config: Config = ConfigFactory.load()
+  System.setProperty("hadoop.home.dir", config.getString("hadoop.home.dir"))
+
+  final val EXTRA_ITERATIONS: Int = config.getInt("group.count")
+  final val GROUP_MAX = config.getInt("group.size.max")
+  final val GROUP_MIN = config.getInt("group.size.min")
+  final val AGGREGATOR_COUNT = config.getInt("data.aggregator.count")
 
   final val MAIN_GENERATOR_SEED = config.getLong("generator.seed.main")
-
   final val PREFERENCE_GENERATOR: Random = {
     config.getString("generator.preference") match {
       case "Uniform" => Uniform.GENERATOR

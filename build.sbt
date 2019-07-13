@@ -14,5 +14,9 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "2.4.0",
   "org.apache.spark" %% "spark-sql" % "2.4.0",
   
-  "org.springframework.boot" % "spring-boot" % "2.1.3.RELEASE"
+  //"org.springframework.boot" % "spring-boot" % "2.1.3.RELEASE",
+
+//  "com.typesafe.play" %% "play" % "2.7.0",
+//  "org.apache.cassandra" % "cassandra-all" % "3.11.3"
 )
+
