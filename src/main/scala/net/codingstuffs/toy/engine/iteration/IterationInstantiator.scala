@@ -7,7 +7,10 @@ import net.codingstuffs.toy.engine.agent.{Agent, AgentConductor}
 import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 import net.codingstuffs.toy.engine.iteration.IterationInstantiator.Generate
 import net.codingstuffs.toy.engine.App
+import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
 import net.codingstuffs.toy.engine.analytics.AnalyticsGenerationActor
+import net.codingstuffs.toy.engine.iteration.DataAggregatorActor.DataAggregate
+import net.codingstuffs.toy.engine.iteration.behavior.GroupDynamics
 
 import scala.util.Random
 
@@ -28,11 +31,13 @@ object IterationInstantiator {
 
 class IterationInstantiator(
   system: ActorSystem,
-) extends Actor with ActorLogging {
+) extends Actor with ActorLogging with GroupDynamics{
   private val agentDataPoints: Seq[AgentParams] = Seq()
-  private var aggregatesReceived = 0
+  private val groupDataPoints: Seq[GroupDataPoint] = Seq()
 
-  override def receive: Receive = onMessage(agentDataPoints)
+  private val aggregatesReceived = 0
+
+  override def receive: Receive = onMessage(agentDataPoints, groupDataPoints, aggregatesReceived)
 
   def reInit(genParams: Generate): Unit = {
     import genParams.{actorSystem, groupSet, members}
@@ -55,24 +60,37 @@ class IterationInstantiator(
     })
   }
 
-  private def onMessage(agentDataPoints: Seq[Agent.AgentParams]): Receive = {
-    case receipt: Seq[AgentParams] =>
-      context.become(onMessage(agentDataPoints ++ receipt))
-      aggregatesReceived += 1
+  private def onMessage(
+    agentDataPoints: Seq[Agent.AgentParams],
+    groupDataPoints: Seq[GroupDataPoint],
+    aggregatesReceived: Int): Receive = {
+    case receipt: DataAggregate =>
+      context.become(
+        onMessage(agentDataPoints ++ receipt.actorDataPoints,
+          groupDataPoints ++ receipt.groupDataPoints,
+          aggregatesReceived + 1))
 
-      if (aggregatesReceived <= ConfigFactory.load.getInt("iterations"))
+      if (aggregatesReceived <= ConfigFactory.load.getInt("iterations")) {
         self ! Generate(
           system,
           App.dataAggregators,
-          receipt.map(param => param.group.toLong).toSet,
-          receipt.groupBy(_.group.toLong).map(item => item._1 -> item._2.toSet)
-        )
+          receipt.actorDataPoints.map(param => param.group.toLong).toSet,
+          receipt.actorDataPoints.groupBy(_.group.toLong).map(item => item._1 -> item._2.toSet)
+        )}
       else {
+        App.analytics ! receipt
         App.analytics ! AnalyticsGenerationActor.Generate
         context.stop(self)
       }
 
-    case generate: Generate =>
+    case generate: Generate => {
+      context.become(
+        onMessage(
+          updateWeights(agentDataPoints, groupDataPoints),
+          groupDataPoints,
+          aggregatesReceived
+      ))
       reInit(generate)
+    }
   }
 }

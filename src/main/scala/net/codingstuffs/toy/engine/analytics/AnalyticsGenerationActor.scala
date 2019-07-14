@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.ConfigFactory
 import net.codingstuffs.toy.engine.agent.Agent.AgentParams
 import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
-import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.DataAggregate
+import net.codingstuffs.toy.engine.iteration.DataAggregatorActor.DataAggregate
 import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
 import org.apache.spark.sql.SparkSession
 
@@ -40,8 +40,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       aggregatesReceived += 1
 
     case Generate =>
-      import sparkSession.implicits._
       import org.apache.spark.sql.functions._
+      import sparkSession.implicits._
 
       val memberStats = actorDataPoints.distinct.toDF
       val groupDecisionStats = groupDataPoints.distinct.toDF
@@ -58,7 +58,7 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         .join(geneticsStats,
           $"phenome" === $"pattern", "left_outer")
         .select("phenome", "utility", "count")
-        .orderBy(desc("utility"))
+        .orderBy(desc("count"))
         .show()
   }
 }

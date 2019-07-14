@@ -2,9 +2,9 @@ package net.codingstuffs.toy.engine
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import net.codingstuffs.toy.engine.analytics.{AnalyticsGenerationActor, DataAggregatorActor}
+import net.codingstuffs.toy.engine.analytics.AnalyticsGenerationActor
 import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
-import net.codingstuffs.toy.engine.iteration.IterationInstantiator
+import net.codingstuffs.toy.engine.iteration.{DataAggregatorActor, IterationInstantiator}
 import net.codingstuffs.toy.engine.providers.InstanceGenerator
 import net.codingstuffs.toy.engine.providers.InstanceGenerator.GenerationParams
 

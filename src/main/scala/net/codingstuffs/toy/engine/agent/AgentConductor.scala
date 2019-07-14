@@ -21,7 +21,8 @@ object AgentConductor {
   case class GroupDataPoint(
     groupId: String,
     phenomeClusterCenter: Array[Int],
-    distancePerMember: Array[Array[Int]])
+    distancesPerMember: Map[Int, Map[Int, Int]],
+    distancesToCentroid: Map[Int, Int])
 }
 
 class AgentConductor(members      : Seq[Int], dataAggregator: ActorRef)
@@ -58,22 +59,35 @@ class AgentConductor(members      : Seq[Int], dataAggregator: ActorRef)
       system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
 
       if (memberExpressions.size == members.size) {
-        val phenomesNumerized = memberExpressions.values
-          .map(phenome => phenome.toCharArray.map(_.toInt))
+        val phenomesNumerized = memberExpressions
+          .map(phenome => phenome._1 -> phenome._2.toCharArray.map(_.toInt))
 
-        val emptyCentroid = phenomesNumerized.head.map(_ => 0)
+        val emptyCentroid = phenomesNumerized.map(_ => 0)
         val centroid = phenomesNumerized.foldLeft(emptyCentroid) {
-          case (acc, item) => acc.zip(item).map(i => i._1 + i._2)
+          case (acc, item) => acc.zip(item._2).map(i => i._1 + i._2)
         }
-          .map(item => item / phenomesNumerized.size)
+          .map(item => item / phenomesNumerized.size).toArray
 
-        val distancePerMember = phenomesNumerized
-          .map(phenome => centroid.zip(phenome).map(i => math.abs(i._1 - i._2)))
+        //It's all Manhattan now
+        //!TODO: More efficient algo?
+        val distancesPerMember = phenomesNumerized
+          .map(phenome => phenome._1 -> phenomesNumerized
+            .filter(item => item._1 != phenome._1)
+            .map(item => item._1 -> (phenome._2, item._2).zipped
+              .map(_ - _).map(math.abs).sum
+            )
+          )
+
+        //!TODO: Maybe also comprehensibility?
+        val distancesToCentroid = phenomesNumerized
+          .map(phenome => phenome._1.asInstanceOf[Int] ->
+            centroid.zip(phenome._2).map(i => math.abs(i._1 - i._2)).sum)
 
         dataAggregator ! GroupDataPoint(
           groupId,
           centroid,
-          distancePerMember.toArray
+          distancesPerMember,
+          distancesToCentroid
         )
         //!TODO: Make cleanup more graceful
         context.stop(self)

@@ -1,9 +1,9 @@
-package net.codingstuffs.toy.engine.analytics
+package net.codingstuffs.toy.engine.iteration
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import net.codingstuffs.toy.engine.agent.Agent.AgentParams
 import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
-import net.codingstuffs.toy.engine.analytics.DataAggregatorActor.DataAggregate
+import net.codingstuffs.toy.engine.iteration.DataAggregatorActor.DataAggregate
 
 object DataAggregatorActor {
   def props(
@@ -29,8 +29,7 @@ class DataAggregatorActor(analytics: ActorRef, ticker: ActorRef, assigned: Int) 
     case dataPoint: GroupDataPoint =>
       groupDataPoints = groupDataPoints :+ dataPoint
       if (groupDataPoints.size == assigned) {
-        analytics ! DataAggregate(actorDataPoints, groupDataPoints)
-        ticker ! actorDataPoints
+        ticker ! DataAggregate(actorDataPoints, groupDataPoints)
         actorDataPoints = Seq()
         groupDataPoints = Seq()
       }
