@@ -40,9 +40,18 @@ class Agent(conductor: ActorRef, params: AgentParams, random: Random)
     case message: ReceiveDecision =>
       context.become(onMessage(knownGroupPatterns + (message.member -> message.expression)))
     case Declare =>
+      val param = AgentParams(
+        params.phenome,
+        params.group,
+        params.turnInGroup,
+        params.groupMembers,
+        params.groupWeights,
+        knownGroupPatterns,
+        params.maslowianParams
+      )
       conductor ! DataPoint(
         Declare(IterationBehavior
-          .pickMutatedSelfOrAttune(params, new Random(random.nextLong))), params)
+          .pickMutatedSelfOrAttune(param, new Random(random.nextLong))), param)
       //!TODO: Make cleanup more graceful
       context.stop(self)
   }

@@ -3,7 +3,7 @@ package net.codingstuffs.toy.engine.agent
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.util.Timeout
 import net.codingstuffs.toy.engine.App.system
-import net.codingstuffs.toy.engine.agent.Agent.{AgentParams, Declare}
+import net.codingstuffs.toy.engine.agent.Agent.{AgentParams, Declare, ReceiveDecision}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -57,6 +57,7 @@ class AgentConductor(members      : Seq[Int], dataAggregator: ActorRef)
 
 
       system.actorSelection(s"/user/$groupId@@@${memberName.toInt + 1}*") ! Declare
+      system.actorSelection(s"/user/$groupId@@@*") ! ReceiveDecision(memberName.toInt, decision)
 
       if (memberExpressions.size == members.size) {
         val phenomesNumerized = memberExpressions

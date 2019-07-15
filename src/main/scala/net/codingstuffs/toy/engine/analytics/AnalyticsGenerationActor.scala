@@ -37,8 +37,6 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
       actorDataPoints = actorDataPoints ++ receipt.actorDataPoints
       groupDataPoints = groupDataPoints ++ receipt.groupDataPoints
 
-      aggregatesReceived += 1
-
     case Generate =>
       import org.apache.spark.sql.functions._
       import sparkSession.implicits._
@@ -53,6 +51,16 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
 
       actorDataPoints = Seq()
       groupDataPoints = Seq()
+
+      val agg = memberStats
+        .join(geneticsStats,
+          $"phenome" === $"pattern", "left_outer")
+
+      val aca = agg.filter($"pattern" === "ACA")
+
+      aca.show(false)
+
+      agg.join(aca, Seq("group")).groupBy($"group", $"pattern").count.show(false)
 
       memberStats.groupBy($"phenome").count()
         .join(geneticsStats,
