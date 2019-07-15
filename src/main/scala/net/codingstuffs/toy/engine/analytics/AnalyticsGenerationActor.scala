@@ -56,11 +56,8 @@ class AnalyticsGenerationActor extends Actor with ActorLogging {
         .join(geneticsStats,
           $"phenome" === $"pattern", "left_outer")
 
-      val aca = agg.filter($"pattern" === "ACA")
 
-      aca.show(false)
-
-      agg.join(aca, Seq("group")).groupBy($"group", $"pattern").count.show(false)
+      agg.show(false)
 
       memberStats.groupBy($"phenome").count()
         .join(geneticsStats,

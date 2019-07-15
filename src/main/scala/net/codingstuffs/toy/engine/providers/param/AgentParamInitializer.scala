@@ -1,12 +1,7 @@
 package net.codingstuffs.toy.engine.providers.param
 
-import akka.actor.ActorRef
 import net.codingstuffs.toy.engine.agent.Agent.AgentParams
-import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 import net.codingstuffs.toy.engine.phenetics.AgentPheneticsGenerator
-import net.codingstuffs.toy.engine.phenetics.calculators.Mutations
-import net.codingstuffs.toy.engine.providers.random_generators.FoldedGaussian
-import net.codingstuffs.toy.engine.providers.MaslowianParamGenerator
 
 import scala.util.Random
 
@@ -15,9 +10,9 @@ object AgentParamInitializer {
 }
 
 class AgentParamInitializer(
-  phenome                           : String,
-  groupId                           : String,
-  turnInGroup                       : Int,
+  phenome: String,
+  groupId: String,
+  turnInGroup: Int,
   groupMembers: Set[Int],
   randomSeed: Long) {
 
@@ -32,8 +27,8 @@ class AgentParamInitializer(
     groupPhenomes(groupId)
   }
 
-  def groupExpressions(groupMembers         : Set[Int]): Map[Int, String] =
-    groupMembers//.filter(member => member != turnInGroup)
+  def groupExpressions(groupMembers: Set[Int]): Map[Int, String] =
+    groupMembers //.filter(member => member != turnInGroup)
       .map(member => member -> groupPhenome(member)).toMap
 
   //!TODO: Review logic here
@@ -42,10 +37,6 @@ class AgentParamInitializer(
       .map(member => member -> new Random(random.nextLong).nextDouble()).toMap
 
   val adjustedParams: AgentParams = {
-    val maslowianGenerator = new MaslowianParamGenerator(
-      ConfigUtil.MASLOWIAN_MEAN_SD.map(value => FoldedGaussian.GENERATOR(value._1, value._2)
-        .nextDouble)
-    )
     AgentParams(
       phenome,
       groupId,
@@ -54,10 +45,10 @@ class AgentParamInitializer(
       //!TODO: Mathod for this instead?
       groupWeights
         .filter(item => item._1 != turnInGroup)
-        .map(item => item._1 -> (1 / maslowianGenerator.getMaslowianSum) * item._2) +
-        (turnInGroup ->  groupWeights(turnInGroup)),
+        .map(item => item._1 -> (1 / MaslowianParamGenerator.INSTANCE.getMaslowianSum) * item._2) +
+        (turnInGroup -> groupWeights(turnInGroup)),
       groupExpressions(groupMembers),
-      maslowianGenerator.getParams
+      MaslowianParamGenerator.INSTANCE.getParams
     )
   }
 }
