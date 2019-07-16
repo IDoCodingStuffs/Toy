@@ -47,7 +47,7 @@ class InstanceGenerator(params: GenerationParams) {
         random.nextLong)
       memberAgents = memberAgents :+ system.actorOf(
         Agent.props(group, generator.adjustedParams, new Random(random.nextLong)),
-        s"$groupId@@@$index")
+        s"$groupId@@@$index@@@${System.nanoTime}")
     }
     )
     //Ask first agent to declare

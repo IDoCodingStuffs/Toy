@@ -71,9 +71,10 @@ class AgentConductor(members      : Seq[Int], dataAggregator: ActorRef)
 
         //It's all Manhattan now
         //!TODO: More efficient algo?
+        //!TODO: Needs fix, does not calculate using after mutation values
         val distancesPerMember = phenomesNumerized
           .map(phenome => phenome._1 -> phenomesNumerized
-            .filter(item => item._1 != phenome._1)
+            //.filter(item => item._1 != phenome._1)
             .map(item => item._1 -> (phenome._2, item._2).zipped
               .map(_ - _).map(math.abs).sum
             )

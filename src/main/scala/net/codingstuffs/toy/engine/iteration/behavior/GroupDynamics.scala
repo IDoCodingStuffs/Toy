@@ -2,6 +2,7 @@ package net.codingstuffs.toy.engine.iteration.behavior
 
 import net.codingstuffs.toy.engine.agent.Agent.AgentParams
 import net.codingstuffs.toy.engine.agent.AgentConductor.GroupDataPoint
+import net.codingstuffs.toy.engine.intake.parse.ConfigUtil
 
 trait GroupDynamics {
   def updateWeights(agentData: Seq[AgentParams],
@@ -12,21 +13,24 @@ trait GroupDynamics {
     val updatedWeights = agents.keySet.map(
       group => group -> agents(group).map(
         agent => agent.turnInGroup -> agent.groupWeights
-          .filter(item => item._1 != agent.turnInGroup)
+          //.filter(item => item._1 != agent.turnInGroup)
           .map(
-            weight => weight._1 -> weight._2 *
-              //Here be the good stuff
-              //!TODO: Make the update logic configurable
-              ((distanceStats(group).head
-                .distancesToCentroid(agent.turnInGroup) + Double.MinPositiveValue) /
-                (distanceStats(group).head
-                  .distancesPerMember(agent.turnInGroup)(weight._1) + Double.MinPositiveValue))
-          )
+            weight => {
+                //Here be the good stuff
+                //!TODO: This desperately needs refactor
+              if (agent.turnInGroup != weight._1) {
+                val distanceToAgent = distanceStats(group).head
+                  .distancesPerMember(agent.turnInGroup)(weight._1) + Double.MinPositiveValue
+                weight._1 -> weight._2 / (distanceToAgent + ConfigUtil.LAMBDA)
+              }
+              else
+                weight._1 -> weight._2
+              })
       ).toMap
     ).toMap
 
 
-    val ret = agentData.map(
+    agentData.map(
       agent => AgentParams(
         agent.phenome,
         agent.group: String,
@@ -37,7 +41,5 @@ trait GroupDynamics {
         agent.maslowianParams
       )
     )
-
-    ret
   }
 }

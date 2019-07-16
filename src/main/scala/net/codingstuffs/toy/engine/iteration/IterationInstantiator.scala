@@ -53,7 +53,7 @@ class IterationInstantiator(
       members(groupId).foreach(param => {
         memberAgents = memberAgents :+ actorSystem.actorOf(
           Agent.props(group, param, new Random()),
-          s"$groupId@@@${param.turnInGroup}")
+          s"$groupId@@@${param.turnInGroup}@@@${System.nanoTime}")
       })
       //Ask first agent to declare
       actorSystem.actorSelection(s"/user/$groupId@@@1*") ! Declare
@@ -84,13 +84,19 @@ class IterationInstantiator(
       }
 
     case generate: Generate => {
+      val newAgentStats = updateWeights(agentDataPoints, groupDataPoints)
       context.become(
         onMessage(
           updateWeights(agentDataPoints, groupDataPoints),
           groupDataPoints,
           aggregatesReceived
       ))
-      reInit(generate)
-    }
+      reInit(Generate(
+        generate.actorSystem,
+        generate.aggregators,
+        generate.groupSet,
+        newAgentStats
+          .groupBy(_.group.toLong).map(item => item._1 -> item._2.toSet)
+      ))    }
   }
 }

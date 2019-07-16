@@ -16,6 +16,8 @@ object ConfigUtil {
   final val BASE_UTIL = config.getDouble("agent.phenome.base_utility")
   final val STANDARD_PHENE = config.getString("agent.phenome.standard")
 
+  final val LAMBDA = config.getDouble("agent.drift.lambda")
+
   final val MAIN_GENERATOR_SEED = config.getLong("generator.seed.main")
   final val PREFERENCE_GENERATOR: Random = {
     config.getString("generator.preference") match {
